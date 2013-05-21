@@ -2,7 +2,12 @@
 $(document).ready(function() {
 
 
+// Array of feed objects, each of which has a title, and link, and a url.
+//   The title is the human-readable name.
+//   The link is the URL to the human-readable blog.
+//   The url is the actual URL of the RSS feed (non-human-readable).
 feeds = [];
+
 
 init = function() {
 
@@ -27,8 +32,9 @@ finishLoadFeedsFromServer = function(data) {
     $(data).find("feed").each(function() {
         var feedElem = $(this),
             feed = {
-                name : feedElem.find("feedname").text(),
+                title : feedElem.find("feedtitle").text(),
                 url : feedElem.find("feedurl").text(),
+                link : feedElem.find("feedlink").text(),
             };
         feeds.push(feed);
         appendFeedToFeedsDiv(feed);
@@ -37,7 +43,9 @@ finishLoadFeedsFromServer = function(data) {
 
 appendFeedToFeedsDiv = function(feed) {
     var feedsDiv = $("#feeds");
-    feedsDiv.append("<div class=feedname>" + feed.name + "</div>");
+    feedsDiv.append("<div class=feedtitle>" + 
+        "<a href=\"" + feed.link + "\">" + feed.title + "</a>" +
+        "</div>");
 };
 
 startAddNewFeed = function() {
@@ -51,7 +59,8 @@ startAddNewFeed = function() {
                     link = $(data).find("channel > link").text(),
                     newfeed = {
                         title : title,
-                        link : link
+                        link : link,
+                        url : url
                     };
                 feeds.push(newfeed);
                 appendFeedToFeedsDiv(newfeed);
@@ -59,20 +68,21 @@ startAddNewFeed = function() {
                 if (alreadySubscribedTo(url)) {
                     alert("Already subscribed to " + url + "!");
                 } else {
-                    addFeedToServer(url);
+                    addFeedToServer(newfeed);
                     startLoadFeedsFromServer();
                     //startPopulatePostsDivWithFeedContents(url);  -- show the
-                    //  posts from this feed right away? maybe...
+                    //  posts from this newly-added feed right away? maybe...
                 }
             };
         })(url));
 };
 
-addFeedToServer = function(url) {
+addFeedToServer = function(newfeed) {
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/rssreader/addFeed.php?name=" +
-            escape(url) + "&url=" + escape(url),
-        type : "GET",
+        url : "http://rosemary.umw.edu/~stephen/rssreader/addFeed.php",
+        type : "POST",
+        data : JSON.stringify(newfeed),
+        contentType : "text/json",
         dataType : "xml"
     });
 };

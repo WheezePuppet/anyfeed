@@ -7,8 +7,9 @@
     $q = mysql_query("select * from feeds where username='stephen'");
     while ($row = mysql_fetch_assoc($q)) {
         print "<feed>";
-        print "<feedname>" . $row["feedname"] . "</feedname>";
+        print "<feedtitle>" . $row["feedtitle"] . "</feedtitle>";
         print "<feedurl>" . $row["feedurl"] . "</feedurl>";
+        print "<feedlink>" . $row["feedlink"] . "</feedlink>";
         print "</feed>";
     }
     print "</feeds>";
