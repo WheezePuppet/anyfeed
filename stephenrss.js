@@ -51,11 +51,6 @@ var appendFeedToFeedsDiv = function(feed) {
 
     var feedsDiv = $("#feeds");
     feedsDiv.append(feedDiv);
-/*
-    feedsDiv.append("<div class=feedtitle>" + 
-        "<a href=\"" + feed.link + "\">" + feed.title + "</a>" +
-        "</div>");
-*/
 };
 
 var startAddNewFeed = function() {
@@ -97,11 +92,6 @@ var addFeedToServer = function(newfeed) {
     });
 };
 
-var startPopulatePostsDivWithFeedContents = function() {
-    var url = $(this).data("feed").url;
-    loadFeedThenCall(url, finishPopulatePostsDivWithFeedContents);
-}
-
 var loadFeedThenCall = function(url, callback) {
     $.ajax({
         url : "http://rosemary.umw.edu/~stephen/rssproxy.php?url=" +
@@ -111,36 +101,78 @@ var loadFeedThenCall = function(url, callback) {
     }).done(callback);
 };
 
-var finishPopulatePostsDivWithFeedContents = function(data) {
+var startPopulatePostsDivWithFeedContents = function() {
+    var url = $(this).data("feed").url;
+    loadFeedThenCall(url, continuePopulatePostsDivWithFeedContents);
+};
 
-    var title = $(data).find("channel > title").text(),
-        postsDiv = $("#posts");
-    
+var continuePopulatePostsDivWithFeedContents = function(data) {
 
-    postsDiv.html("<div class=poststitle>" + title + "</div>");
+    var guids = [];
 
-    $(data).find("item").each(function() {
-        var post = $(this);
-        var toAppend = "";
-
-        toAppend += "<div>" + 
-            "<div class=posttitle>" + 
-                "<a href=\"" + post.find("link").text() + 
-                    "\" target=\"_blank\">" + 
-                    post.find("title").text() + "</a>";
-
-        if (post.find("author").text()) {
-            toAppend += " <span class=postauthor>(" + 
-                post.find("author").text() + ")</span>";
-        }
-
-        toAppend += "</div>";
-        toAppend += "<div class=posttext>" + post.find("description").text() + 
-            "</div>" +
-        "</div>";
-
-        postsDiv.append(toAppend);
+    $(data).find("item > guid").each(function() {
+        guids.push($(this).text());
     });
+
+    $.ajax({
+        url : 
+          "http://rosemary.umw.edu/~stephen/rssreader/whichGuidsAreUnread.php",
+        data : JSON.stringify(guids),
+        type : "POST",
+        dataType : "json",
+        contentType : "text/json"
+    }).done((function(feedContents) {
+
+        return function finishPopulatePostsDivWithFeedContents(data) {
+
+            var title = $(feedContents).find("channel > title").text(),
+                postsDiv = $("#posts"),
+                unread = $(data);
+            
+
+            postsDiv.html("<div class=poststitle>" + title + "</div>");
+
+            $(feedContents).find("item").each(function() {
+
+                var post = $(this),
+                    postDiv = $("<div>"),
+                    postTitleDiv = $("<div>"),
+                    postTextDiv = $("<div>"),
+                    toAppend = "";
+
+                postTitleDiv.addClass("posttitle");
+                postTextDiv.addClass("posttext");
+                
+                toAppend += 
+                    "<a href=\"" + post.find("link").text() + 
+                        "\" target=\"_blank\">" + 
+                        post.find("title").text() + "</a>";
+
+                if (post.find("author").text()) {
+                    toAppend += " <span class=postauthor>(" + 
+                        post.find("author").text() + ")</span>";
+                }
+
+                postTitleDiv.append(toAppend);
+                postTextDiv.append(post.find("description").text());
+
+                if ($.inArray(post.find("guid").text(),unread) == -1) {
+                    postTitleDiv.find("a").addClass("read");
+                    postTextDiv.addClass("read");
+                } else {
+                    postTitleDiv.find("a").addClass("unread");
+                    postTextDiv.addClass("unread");
+                }
+
+//                postTextDiv.click(
+
+                postDiv.append(postTitleDiv);
+                postDiv.append(postTextDiv);
+                postsDiv.append(postDiv);
+
+            });
+        };
+    })(data));
 };
 
 var alreadySubscribedTo = function(url) {

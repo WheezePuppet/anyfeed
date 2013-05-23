@@ -12,3 +12,8 @@ body { background-color:#DDDDDD; }
 #feeds { float:left; width:30%; }
 
 #posts { float:right; width:70%; }
+
+.read { color:grey; }
+
+.unread { color:black; }
+a.unread { color:blue; }
