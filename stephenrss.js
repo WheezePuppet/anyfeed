@@ -6,16 +6,16 @@ $(document).ready(function() {
 //   The title is the human-readable name.
 //   The link is the URL to the human-readable blog.
 //   The url is the actual URL of the RSS feed (non-human-readable).
-feeds = [];
+var feeds = [];
 
 
-init = function() {
+var init = function() {
 
     startLoadFeedsFromServer();
     $("#addnewfeed").click(startAddNewFeed);
 };
 
-startLoadFeedsFromServer = function() {
+var startLoadFeedsFromServer = function() {
     feeds = [];
     $.ajax({
         url : "http://rosemary.umw.edu/~stephen/rssreader/getAllFeeds.php",
@@ -24,7 +24,7 @@ startLoadFeedsFromServer = function() {
     }).done(finishLoadFeedsFromServer);
 };
 
-finishLoadFeedsFromServer = function(data) {
+var finishLoadFeedsFromServer = function(data) {
 
     var feedsDiv = $("#feeds");
     feedsDiv.html("");
@@ -41,14 +41,24 @@ finishLoadFeedsFromServer = function(data) {
     });
 };
 
-appendFeedToFeedsDiv = function(feed) {
+var appendFeedToFeedsDiv = function(feed) {
+
+    var feedDiv = $("<div>");
+    feedDiv.addClass("feedtitle");
+    feedDiv.text(feed.title);
+    feedDiv.data("feed",feed);
+    feedDiv.click(startPopulatePostsDivWithFeedContents);
+
     var feedsDiv = $("#feeds");
+    feedsDiv.append(feedDiv);
+/*
     feedsDiv.append("<div class=feedtitle>" + 
         "<a href=\"" + feed.link + "\">" + feed.title + "</a>" +
         "</div>");
+*/
 };
 
-startAddNewFeed = function() {
+var startAddNewFeed = function() {
 
     var url = $("#newfeedurl").val();
     loadFeedThenCall(url, 
@@ -77,7 +87,7 @@ startAddNewFeed = function() {
         })(url));
 };
 
-addFeedToServer = function(newfeed) {
+var addFeedToServer = function(newfeed) {
     $.ajax({
         url : "http://rosemary.umw.edu/~stephen/rssreader/addFeed.php",
         type : "POST",
@@ -87,11 +97,12 @@ addFeedToServer = function(newfeed) {
     });
 };
 
-startPopulatePostsDivWithFeedContents = function(url) {
+var startPopulatePostsDivWithFeedContents = function() {
+    var url = $(this).data("feed").url;
     loadFeedThenCall(url, finishPopulatePostsDivWithFeedContents);
 }
 
-loadFeedThenCall = function(url, callback) {
+var loadFeedThenCall = function(url, callback) {
     $.ajax({
         url : "http://rosemary.umw.edu/~stephen/rssproxy.php?url=" +
             escape(url),
@@ -100,7 +111,7 @@ loadFeedThenCall = function(url, callback) {
     }).done(callback);
 };
 
-finishPopulatePostsDivWithFeedContents = function(data) {
+var finishPopulatePostsDivWithFeedContents = function(data) {
 
     var title = $(data).find("channel > title").text(),
         postsDiv = $("#posts");
@@ -132,7 +143,7 @@ finishPopulatePostsDivWithFeedContents = function(data) {
     });
 };
 
-alreadySubscribedTo = function(url) {
+var alreadySubscribedTo = function(url) {
     return false;
 };
 
