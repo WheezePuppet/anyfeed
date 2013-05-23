@@ -156,6 +156,9 @@ var continuePopulatePostsDivWithFeedContents = function(data) {
                 postTitleDiv.append(toAppend);
                 postTextDiv.append(post.find("description").text());
 
+                postDiv.data("post",post);
+                postDiv.click(startTogglePostReadness);
+
                 if ($.inArray(post.find("guid").text(),unread) == -1) {
                     postTitleDiv.find("a").addClass("read");
                     postTextDiv.addClass("read");
@@ -164,8 +167,6 @@ var continuePopulatePostsDivWithFeedContents = function(data) {
                     postTextDiv.addClass("unread");
                 }
 
-//                postTextDiv.click(
-
                 postDiv.append(postTitleDiv);
                 postDiv.append(postTextDiv);
                 postsDiv.append(postDiv);
@@ -173,6 +174,35 @@ var continuePopulatePostsDivWithFeedContents = function(data) {
             });
         };
     })(data));
+};
+
+var startTogglePostReadness = function() {
+    var post = $(this).data("post");
+    $.ajax({
+        url :
+        "http://rosemary.umw.edu/~stephen/rssreader/togglePostReadness?guid=" +
+            escape(post.find("guid").text()),
+        type : "GET",
+        dataType : "text"
+    }).done((function(postDiv) {
+
+        return function finishTogglePostReadness(data) {
+
+            var postTitleDiv = postDiv.find(".posttitle"),
+                postTextDiv = postDiv.find(".posttext");
+            if (data.indexOf("read") == 0) {
+                postTitleDiv.find("a").addClass("read");
+                postTitleDiv.find("a").removeClass("unread");
+                postTextDiv.addClass("read");
+                postTextDiv.removeClass("unread");
+            } else {
+                postTitleDiv.find("a").addClass("unread");
+                postTitleDiv.find("a").removeClass("read");
+                postTextDiv.addClass("unread");
+                postTextDiv.removeClass("read");
+            }
+        };
+    })($(this)));
 };
 
 var alreadySubscribedTo = function(url) {
