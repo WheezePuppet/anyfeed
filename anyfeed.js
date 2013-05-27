@@ -21,7 +21,23 @@ var loadedFeed;
 
 var init = function() {
     startLoadFeedsFromServer();
-    $("#addnewfeed").click(startAddNewFeed);
+    $("#addnewfeed").click(addTypedFeed);
+    $("#import").click(importOpml);
+};
+
+var importOpml = function() {
+    $.ajax({
+        url : "http://rosemary.umw.edu/~stephen/anyfeed/subscriptions.xml",
+        type : "GET",
+        dataType : "xml"
+    }).done(function(data) {
+        $(data).find("outline > outline").each(
+            function() {
+                startAddNewFeed($(this).attr("xmlUrl"),
+                    $(this).attr("title"));
+            }
+        );
+    });
 };
 
 var addFeedToMemoryAndDisplay = function(newfeed) {
@@ -81,7 +97,7 @@ var renameFeed = function() {
         feed.title = newtitle;
         updateFeedInFeedsDiv(feed);
         if (feed == loadedFeed) {
-            $("#poststitle").text(newtitle);
+            $("#poststitle").text(newtitle + " (" + oldtitle + ")");
         }
     });
 };
@@ -173,17 +189,21 @@ var finishLoadFeedsFromServer = function(data) {
     });
 };
 
-
-var startAddNewFeed = function() {
-
+var addTypedFeed = function() {
     var url = $("#newfeedurl").val();
-    loadFeedThenCall(url, finishAddNewFeed(url));
+    startAddNewFeed(url);
     $("#newfeedurl").val("");
 };
 
-var finishAddNewFeed = function(url) { 
+// (title will be null unless this is an import)
+var startAddNewFeed = function(url, newtitle) {
+    loadFeedThenCall(url, finishAddNewFeed(url, newtitle));
+};
+
+var finishAddNewFeed = function(url, newtitle) { 
     return function(data) {
-        var title = $(data).find("channel > title").text(),
+        var title = newtitle == null ? 
+                $(data).find("channel > title").text() : newtitle,
             link = $(data).find("channel > link").text(),
             newfeed = {
                 title : title,
@@ -251,11 +271,16 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
 
             var title = $(feedContents).find("channel > title").text(),
                 postsDiv = $("#posts"),
-                unread = $(data);
+                unread = $(data),
+                feed = feedsHash[url];
+        
+            if (feed.title != null && feed.title != title) {
+                title = feedsHash[url].title + " (" + title + ")";
+            }
 
             postsDiv.html("<div id=poststitle>" + title + "</div>");
 
-            if (feedsHash[url].unreadCount == 0) {
+            if (feed.unreadCount == 0) {
                 $("#poststitle").addClass("feedcaughtup");
             } else {
                 $("#poststitle").addClass("feednotcaughtup");
