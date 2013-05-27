@@ -45,12 +45,12 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
     // 3. Update the feed with its "unread" count.
     if (newfeed.contents === undefined) {
         // Cache empty for this feed. Fill it.        
-        loadFeedThenCall(newfeed.url, (function(feed) {
-            return function(data) {
-                feed.contents = $(data);
-                startUpdateUnreadCountFromCachedContents(feed);
-            };
-        })(newfeed));
+        loadFeedThenCall(newfeed.url, 
+            function(data) {
+                newfeed.contents = $(data);
+                startUpdateUnreadCountFromCachedContents(newfeed);
+            }
+        );
     } else {
         startUpdateUnreadCountFromCachedContents(newfeed);
     }
@@ -100,6 +100,15 @@ var setUnreadCount = function(feed, unreadCount) {
             "</span>");
         feed.feedDiv.append(" <span class=nonzerounreadcount>(" + 
             unreadCount + ")</span>");
+    }
+    if (feed == loadedFeed) {
+        if (unreadCount == 0) {
+            $("#poststitle").addClass("feedcaughtup");
+            $("#poststitle").removeClass("feednotcaughtup");
+        } else {
+            $("#poststitle").addClass("feednotcaughtup");
+            $("#poststitle").removeClass("feedcaughtup");
+        }
     }
 };
 
@@ -154,8 +163,6 @@ var finishAddNewFeed = function(url) {
         } else {
             addFeedToMemoryAndDisplay(newfeed);
             addFeedToServer(newfeed);
-            //startPopulatePostsDivWithFeedContents(url);  -- show the
-            //  posts from this newly-added feed right away? maybe...
         }
     };
 }
@@ -186,75 +193,79 @@ var startPopulatePostsDivWithFeedContents = function() {
     }
     loadedFeed = $(this).data("feed");
     loadedFeed.feedDiv.addClass("activeFeed");
-    loadFeedThenCall(url, continuePopulatePostsDivWithFeedContents);
+    loadFeedThenCall(url, continuePopulatePostsDivWithFeedContents(url));
 };
 
-var continuePopulatePostsDivWithFeedContents = function(data) {
+var continuePopulatePostsDivWithFeedContents = function(url) {
 
-    var guids = [];
+    return function(feedContents) {
 
-    $(data).find("item > guid").each(function() {
-        guids.push($(this).text());
-    });
+        var guids = [];
 
-    $.ajax({
-        url : 
-          "http://rosemary.umw.edu/~stephen/anyfeed/whichGuidsAreUnread.php",
-        data : JSON.stringify(guids),
-        type : "POST",
-        dataType : "json",
-        contentType : "text/json"
-    }).done(finishPopulatePostsDivWithFeedContents($(data)));
-};
+        $(feedContents).find("item > guid").each(function() {
+            guids.push($(this).text());
+        });
 
-var finishPopulatePostsDivWithFeedContents = function(feedContents) {
+        $.ajax({
+            url : 
+            "http://rosemary.umw.edu/~stephen/anyfeed/whichGuidsAreUnread.php",
+            data : JSON.stringify(guids),
+            type : "POST",
+            dataType : "json",
+            contentType : "text/json"
+        }).done(function finishPopulatePostsDivWithFeedContents(data) {
 
-    return function(data) {
+            var title = $(feedContents).find("channel > title").text(),
+                postsDiv = $("#posts"),
+                unread = $(data);
 
-        var title = $(feedContents).find("channel > title").text(),
-            postsDiv = $("#posts"),
-            unread = $(data);
+            postsDiv.html("<div id=poststitle>" + title + "</div>");
 
-        postsDiv.html("<div class=poststitle>" + title + "</div>");
-
-        $(feedContents).find("item").each(function() {
-
-            var post = $(this),
-                postDiv = $("<div>"),
-                postTitleDiv = $("<div>"),
-                postTextDiv = $("<div>"),
-                toAppend = "";
-
-            postTitleDiv.addClass("posttitle");
-            postTextDiv.addClass("posttext");
-            
-            toAppend += 
-                "<a href=\"" + post.find("link").text() + 
-                    "\" target=\"_blank\">" + 
-                    post.find("title").text() + "</a>";
-
-            if (post.find("author").text()) {
-                toAppend += " <span class=postauthor>(" + 
-                    post.find("author").text() + ")</span>";
-            }
-
-            postTitleDiv.append(toAppend);
-            postTextDiv.append(post.find("description").text());
-
-            postDiv.data("post",post);
-            postDiv.click(startTogglePostReadness);
-
-            if ($.inArray(post.find("guid").text(),unread) == -1) {
-                postTitleDiv.find("a").addClass("read");
-                postTextDiv.addClass("read");
+            if (feedsHash[url].unreadCount == 0) {
+                $("#poststitle").addClass("feedcaughtup");
             } else {
-                postTitleDiv.find("a").addClass("unread");
-                postTextDiv.addClass("unread");
+                $("#poststitle").addClass("feednotcaughtup");
             }
 
-            postDiv.append(postTitleDiv);
-            postDiv.append(postTextDiv);
-            postsDiv.append(postDiv);
+            $(feedContents).find("item").each(function() {
+
+                var post = $(this),
+                    postDiv = $("<div>"),
+                    postTitleDiv = $("<div>"),
+                    postTextDiv = $("<div>"),
+                    toAppend = "";
+
+                postTitleDiv.addClass("posttitle");
+                postTextDiv.addClass("posttext");
+                
+                toAppend += 
+                    "<a href=\"" + post.find("link").text() + 
+                        "\" target=\"_blank\">" + 
+                        post.find("title").text() + "</a>";
+
+                if (post.find("author").text()) {
+                    toAppend += " <span class=postauthor>(" + 
+                        post.find("author").text() + ")</span>";
+                }
+
+                postTitleDiv.append(toAppend);
+                postTextDiv.append(post.find("description").text());
+
+                postDiv.data("post",post);
+                postDiv.click(startTogglePostReadness);
+
+                if ($.inArray(post.find("guid").text(),unread) == -1) {
+                    postTitleDiv.find("a").addClass("read");
+                    postTextDiv.addClass("read");
+                } else {
+                    postTitleDiv.find("a").addClass("unread");
+                    postTextDiv.addClass("unread");
+                }
+
+                postDiv.append(postTitleDiv);
+                postDiv.append(postTextDiv);
+                postsDiv.append(postDiv);
+            });
         });
     };
 };
