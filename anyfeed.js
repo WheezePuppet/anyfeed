@@ -2,21 +2,94 @@
 $(document).ready(function() {
 
 
-// Array of feed objects, each of which has a title, and link, and a url.
+// Array of feed objects, each of which has a title, and link, a url, and
+//   possibly cached contents and unread count.
 //   The title is the human-readable name.
 //   The link is the URL to the human-readable blog.
 //   The url is the actual URL of the RSS feed (non-human-readable).
-var feeds = [];
+//   The contents is the jQuery-ified XML-parsed feed response.
+//   The unreadCount is an integer of the number of unread posts.
+var feedsArray = [];
+
+// A hashtable of those very same feed objects, indexed by url. (More
+//   precisely, an object whose property names are urls and whose property
+//   values are feed objects.)
+var feedsHash = {};
 
 
 var init = function() {
-
     startLoadFeedsFromServer();
     $("#addnewfeed").click(startAddNewFeed);
 };
 
+var addFeedToMemoryAndDisplay = function(newfeed) {
+
+    // 1a. Create a feed div for this new feed.
+    var feedDiv = $("<div>"),    // (create a new feed div)
+        feedsDiv = $("#feeds");  // (get the existing feeds div)
+    feedDiv.addClass("feedtitle");
+    feedDiv.text(newfeed.title);
+    feedDiv.data("feed",newfeed);
+    feedDiv.click(startPopulatePostsDivWithFeedContents);
+
+    // 1b. Add this feed div to the feeds div.
+    feedsDiv.append(feedDiv);
+
+    // 2. Add this feed to the data structures (feedsArray, feedsHash).
+    newfeed["feedDiv"] = feedDiv;
+    feedsArray.push(newfeed);
+    feedsHash[newfeed.url] = newfeed;
+
+    // 3. Update the feed with its "unread" count.
+    if (newfeed.contents === undefined) {
+        // Cache empty for this feed. Fill it.        
+        loadFeedThenCall(newfeed.url, (function(feed) {
+            return function(data) {
+                feed.contents = $(data);
+                startUpdateUnreadCountFromCachedContents(feed);
+            };
+        })(newfeed));
+    } else {
+        startUpdateUnreadCountFromCachedContents(newfeed);
+    }
+};
+
+var startUpdateUnreadCountFromCachedContents = function(feed) {
+    var feedDiv = feed["feedDiv"],
+        cachedContent = feed["contents"],
+        guids = [];
+
+    $(cachedContent).find("item > guid").each(function() {
+        guids.push($(this).text());
+    });
+
+    $.ajax({
+        url : 
+          "http://rosemary.umw.edu/~stephen/anyfeed/whichGuidsAreUnread.php",
+        data : JSON.stringify(guids),
+        type : "POST",
+        dataType : "json",
+        contentType : "text/json"
+    }).done(
+        function finishUpdateUnreadCountFromCachedContents(data) {
+            var unread = $(data);
+            setUnreadCount(feed, unread.length);
+        });
+};
+
+var setUnreadCount = function(feed, unreadCount) {
+    feed.unreadCount = unreadCount;
+    if (unreadCount == 0) {
+        feed.feedDiv.append(" <span class=zerounreadcount>(0)");
+    } else {
+        feed.feedDiv.append(" <span class=nonzerounreadcount>(" + 
+            unreadCount + ")</span>");
+    }
+};
+
 var startLoadFeedsFromServer = function() {
-    feeds = [];
+    feedsArray = [];
+    feedsHash = {};
     $.ajax({
         url : "http://rosemary.umw.edu/~stephen/anyfeed/getAllFeeds.php",
         type : "GET",
@@ -31,27 +104,16 @@ var finishLoadFeedsFromServer = function(data) {
 
     $(data).find("feed").each(function() {
         var feedElem = $(this),
+            url = feedElem.find("feedurl").text(),
             feed = {
                 title : feedElem.find("feedtitle").text(),
-                url : feedElem.find("feedurl").text(),
+                url : url,
                 link : feedElem.find("feedlink").text(),
             };
-        feeds.push(feed);
-        appendFeedToFeedsDiv(feed);
+        addFeedToMemoryAndDisplay(feed);
     });
 };
 
-var appendFeedToFeedsDiv = function(feed) {
-
-    var feedDiv = $("<div>");
-    feedDiv.addClass("feedtitle");
-    feedDiv.text(feed.title);
-    feedDiv.data("feed",feed);
-    feedDiv.click(startPopulatePostsDivWithFeedContents);
-
-    var feedsDiv = $("#feeds");
-    feedsDiv.append(feedDiv);
-};
 
 var startAddNewFeed = function() {
 
@@ -65,16 +127,15 @@ var startAddNewFeed = function() {
                     newfeed = {
                         title : title,
                         link : link,
-                        url : url
+                        url : url,
+                        contents : $(data)
                     };
-                feeds.push(newfeed);
-                appendFeedToFeedsDiv(newfeed);
+                addFeedToMemoryAndDisplay(newfeed);
 
                 if (alreadySubscribedTo(url)) {
                     alert("Already subscribed to " + url + "!");
                 } else {
                     addFeedToServer(newfeed);
-                    startLoadFeedsFromServer();
                     //startPopulatePostsDivWithFeedContents(url);  -- show the
                     //  posts from this newly-added feed right away? maybe...
                 }

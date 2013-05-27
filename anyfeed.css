@@ -17,3 +17,7 @@ body { background-color:#DDDDDD; }
 
 .unread { color:black; }
 a.unread { color:blue; }
+
+.zerounreadcount, .nonzerounreadcount { font-size:10pt; }
+.nonzerounreadcount { color:red; }
+.zerounreadcount { color:grey; }
