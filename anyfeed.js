@@ -16,6 +16,8 @@ var feedsArray = [];
 //   values are feed objects.)
 var feedsHash = {};
 
+// The feed whose posts are currently in the posts div.
+var loadedFeed;
 
 var init = function() {
     startLoadFeedsFromServer();
@@ -77,11 +79,25 @@ var startUpdateUnreadCountFromCachedContents = function(feed) {
         });
 };
 
+var incrementUnreadCountFor = function(feed) {
+    var newCount = feed.unreadCount + 1;
+    setUnreadCount(feed, newCount);
+};
+
+var decrementUnreadCountFor = function(feed) {
+    var newCount = feed.unreadCount - 1;
+    setUnreadCount(feed, newCount);
+};
+
 var setUnreadCount = function(feed, unreadCount) {
     feed.unreadCount = unreadCount;
     if (unreadCount == 0) {
+        feed.feedDiv.html("<span class=feedcaughtup>" + feed.title +
+            "</span>");
         feed.feedDiv.append(" <span class=zerounreadcount>(0)");
     } else {
+        feed.feedDiv.html("<span class=feednotcaughtup>" + feed.title +
+            "</span>");
         feed.feedDiv.append(" <span class=nonzerounreadcount>(" + 
             unreadCount + ")</span>");
     }
@@ -164,6 +180,7 @@ var loadFeedThenCall = function(url, callback) {
 
 var startPopulatePostsDivWithFeedContents = function() {
     var url = $(this).data("feed").url;
+    loadedFeed = $(this).data("feed");
     loadFeedThenCall(url, continuePopulatePostsDivWithFeedContents);
 };
 
@@ -256,11 +273,13 @@ var startTogglePostReadness = function() {
                 postTitleDiv.find("a").removeClass("unread");
                 postTextDiv.addClass("read");
                 postTextDiv.removeClass("unread");
+                decrementUnreadCountFor(loadedFeed);
             } else {
                 postTitleDiv.find("a").addClass("unread");
                 postTitleDiv.find("a").removeClass("read");
                 postTextDiv.addClass("unread");
                 postTextDiv.removeClass("read");
+                incrementUnreadCountFor(loadedFeed);
             }
         };
     })($(this)));

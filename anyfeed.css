@@ -1,6 +1,8 @@
 
 body { background-color:#DDDDDD; }
 
+#apptitle { text-align:left; }
+
 .poststitle { font-size:25pt; }
 
 .posttitle { font-size:12pt; margin-top:5px; }
@@ -9,7 +11,9 @@ body { background-color:#DDDDDD; }
 
 .postauthor { font-size:8pt; color:#555555; }
 
-#feeds { float:left; width:30%; }
+.leftpane { position:fixed; }
+
+.leftpane { float:left; width:30%; }
 
 #posts { float:right; width:70%; }
 
@@ -19,5 +23,7 @@ body { background-color:#DDDDDD; }
 a.unread { color:blue; }
 
 .zerounreadcount, .nonzerounreadcount { font-size:10pt; }
-.nonzerounreadcount { color:red; }
+.nonzerounreadcount { color:blue; }
 .zerounreadcount { color:grey; }
+.feedcaughtup { color:grey; }
+.feednotcaughtup { color:black; }
