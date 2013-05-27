@@ -135,6 +135,7 @@ var startAddNewFeed = function() {
 
     var url = $("#newfeedurl").val();
     loadFeedThenCall(url, finishAddNewFeed(url));
+    $("#newfeedurl").val("");
 };
 
 var finishAddNewFeed = function(url) { 
