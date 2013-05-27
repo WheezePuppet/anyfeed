@@ -18,7 +18,7 @@ var init = function() {
 var startLoadFeedsFromServer = function() {
     feeds = [];
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/rssreader/getAllFeeds.php",
+        url : "http://rosemary.umw.edu/~stephen/anyfeed/getAllFeeds.php",
         type : "GET",
         dataType : "xml"
     }).done(finishLoadFeedsFromServer);
@@ -84,7 +84,7 @@ var startAddNewFeed = function() {
 
 var addFeedToServer = function(newfeed) {
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/rssreader/addFeed.php",
+        url : "http://rosemary.umw.edu/~stephen/anyfeed/addFeed.php",
         type : "POST",
         data : JSON.stringify(newfeed),
         contentType : "text/json",
@@ -116,7 +116,7 @@ var continuePopulatePostsDivWithFeedContents = function(data) {
 
     $.ajax({
         url : 
-          "http://rosemary.umw.edu/~stephen/rssreader/whichGuidsAreUnread.php",
+          "http://rosemary.umw.edu/~stephen/anyfeed/whichGuidsAreUnread.php",
         data : JSON.stringify(guids),
         type : "POST",
         dataType : "json",
@@ -180,7 +180,7 @@ var startTogglePostReadness = function() {
     var post = $(this).data("post");
     $.ajax({
         url :
-        "http://rosemary.umw.edu/~stephen/rssreader/togglePostReadness?guid=" +
+        "http://rosemary.umw.edu/~stephen/anyfeed/togglePostReadness?guid=" +
             escape(post.find("guid").text()),
         type : "GET",
         dataType : "text"
