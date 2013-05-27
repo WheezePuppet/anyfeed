@@ -7,9 +7,11 @@ body { background-color:#DDDDDD; }
 
 .posttitle { font-size:12pt; margin-top:5px; }
 
-.posttext { font-size:10pt; }
+.posttext { font-size:10pt; cursor:pointer; }
 
 .postauthor { font-size:8pt; color:#555555; }
+
+.feedtitle { cursor:pointer; }
 
 .leftpane { position:fixed; }
 
