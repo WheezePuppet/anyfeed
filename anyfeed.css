@@ -27,3 +27,5 @@ a.unread { color:blue; }
 .zerounreadcount { color:grey; }
 .feedcaughtup { color:grey; }
 .feednotcaughtup { color:black; }
+
+.activeFeed { font-weight:bold; }

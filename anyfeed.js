@@ -134,30 +134,30 @@ var finishLoadFeedsFromServer = function(data) {
 var startAddNewFeed = function() {
 
     var url = $("#newfeedurl").val();
-    loadFeedThenCall(url, 
-        (function(url) { 
-            return function finishAddNewFeed(data) {
-
-                var title = $(data).find("channel > title").text(),
-                    link = $(data).find("channel > link").text(),
-                    newfeed = {
-                        title : title,
-                        link : link,
-                        url : url,
-                        contents : $(data)
-                    };
-                addFeedToMemoryAndDisplay(newfeed);
-
-                if (alreadySubscribedTo(url)) {
-                    alert("Already subscribed to " + url + "!");
-                } else {
-                    addFeedToServer(newfeed);
-                    //startPopulatePostsDivWithFeedContents(url);  -- show the
-                    //  posts from this newly-added feed right away? maybe...
-                }
-            };
-        })(url));
+    loadFeedThenCall(url, finishAddNewFeed(url));
 };
+
+var finishAddNewFeed = function(url) { 
+    return function(data) {
+        var title = $(data).find("channel > title").text(),
+            link = $(data).find("channel > link").text(),
+            newfeed = {
+                title : title,
+                link : link,
+                url : url,
+                contents : $(data)
+            };
+
+        if (alreadySubscribedTo(url)) {
+            alert("Already subscribed to " + url + "!");
+        } else {
+            addFeedToMemoryAndDisplay(newfeed);
+            addFeedToServer(newfeed);
+            //startPopulatePostsDivWithFeedContents(url);  -- show the
+            //  posts from this newly-added feed right away? maybe...
+        }
+    };
+}
 
 var addFeedToServer = function(newfeed) {
     $.ajax({
@@ -180,7 +180,11 @@ var loadFeedThenCall = function(url, callback) {
 
 var startPopulatePostsDivWithFeedContents = function() {
     var url = $(this).data("feed").url;
+    if (loadedFeed != null) {
+        loadedFeed.feedDiv.removeClass("activeFeed");
+    }
     loadedFeed = $(this).data("feed");
+    loadedFeed.feedDiv.addClass("activeFeed");
     loadFeedThenCall(url, continuePopulatePostsDivWithFeedContents);
 };
 
@@ -199,59 +203,59 @@ var continuePopulatePostsDivWithFeedContents = function(data) {
         type : "POST",
         dataType : "json",
         contentType : "text/json"
-    }).done((function(feedContents) {
+    }).done(finishPopulatePostsDivWithFeedContents($(data)));
+};
 
-        return function finishPopulatePostsDivWithFeedContents(data) {
+var finishPopulatePostsDivWithFeedContents = function(feedContents) {
 
-            var title = $(feedContents).find("channel > title").text(),
-                postsDiv = $("#posts"),
-                unread = $(data);
+    return function(data) {
+
+        var title = $(feedContents).find("channel > title").text(),
+            postsDiv = $("#posts"),
+            unread = $(data);
+
+        postsDiv.html("<div class=poststitle>" + title + "</div>");
+
+        $(feedContents).find("item").each(function() {
+
+            var post = $(this),
+                postDiv = $("<div>"),
+                postTitleDiv = $("<div>"),
+                postTextDiv = $("<div>"),
+                toAppend = "";
+
+            postTitleDiv.addClass("posttitle");
+            postTextDiv.addClass("posttext");
             
+            toAppend += 
+                "<a href=\"" + post.find("link").text() + 
+                    "\" target=\"_blank\">" + 
+                    post.find("title").text() + "</a>";
 
-            postsDiv.html("<div class=poststitle>" + title + "</div>");
+            if (post.find("author").text()) {
+                toAppend += " <span class=postauthor>(" + 
+                    post.find("author").text() + ")</span>";
+            }
 
-            $(feedContents).find("item").each(function() {
+            postTitleDiv.append(toAppend);
+            postTextDiv.append(post.find("description").text());
 
-                var post = $(this),
-                    postDiv = $("<div>"),
-                    postTitleDiv = $("<div>"),
-                    postTextDiv = $("<div>"),
-                    toAppend = "";
+            postDiv.data("post",post);
+            postDiv.click(startTogglePostReadness);
 
-                postTitleDiv.addClass("posttitle");
-                postTextDiv.addClass("posttext");
-                
-                toAppend += 
-                    "<a href=\"" + post.find("link").text() + 
-                        "\" target=\"_blank\">" + 
-                        post.find("title").text() + "</a>";
+            if ($.inArray(post.find("guid").text(),unread) == -1) {
+                postTitleDiv.find("a").addClass("read");
+                postTextDiv.addClass("read");
+            } else {
+                postTitleDiv.find("a").addClass("unread");
+                postTextDiv.addClass("unread");
+            }
 
-                if (post.find("author").text()) {
-                    toAppend += " <span class=postauthor>(" + 
-                        post.find("author").text() + ")</span>";
-                }
-
-                postTitleDiv.append(toAppend);
-                postTextDiv.append(post.find("description").text());
-
-                postDiv.data("post",post);
-                postDiv.click(startTogglePostReadness);
-
-                if ($.inArray(post.find("guid").text(),unread) == -1) {
-                    postTitleDiv.find("a").addClass("read");
-                    postTextDiv.addClass("read");
-                } else {
-                    postTitleDiv.find("a").addClass("unread");
-                    postTextDiv.addClass("unread");
-                }
-
-                postDiv.append(postTitleDiv);
-                postDiv.append(postTextDiv);
-                postsDiv.append(postDiv);
-
-            });
-        };
-    })(data));
+            postDiv.append(postTitleDiv);
+            postDiv.append(postTextDiv);
+            postsDiv.append(postDiv);
+        });
+    };
 };
 
 var startTogglePostReadness = function() {
@@ -262,31 +266,33 @@ var startTogglePostReadness = function() {
             escape(post.find("guid").text()),
         type : "GET",
         dataType : "text"
-    }).done((function(postDiv) {
+    }).done(finishTogglePostReadness($(this)));
+};
 
-        return function finishTogglePostReadness(data) {
+var finishTogglePostReadness = function(postDiv) {
 
-            var postTitleDiv = postDiv.find(".posttitle"),
-                postTextDiv = postDiv.find(".posttext");
-            if (data.indexOf("read") == 0) {
-                postTitleDiv.find("a").addClass("read");
-                postTitleDiv.find("a").removeClass("unread");
-                postTextDiv.addClass("read");
-                postTextDiv.removeClass("unread");
-                decrementUnreadCountFor(loadedFeed);
-            } else {
-                postTitleDiv.find("a").addClass("unread");
-                postTitleDiv.find("a").removeClass("read");
-                postTextDiv.addClass("unread");
-                postTextDiv.removeClass("read");
-                incrementUnreadCountFor(loadedFeed);
-            }
-        };
-    })($(this)));
+    return function(data) {
+
+        var postTitleDiv = postDiv.find(".posttitle"),
+            postTextDiv = postDiv.find(".posttext");
+        if (data.indexOf("read") == 0) {
+            postTitleDiv.find("a").addClass("read");
+            postTitleDiv.find("a").removeClass("unread");
+            postTextDiv.addClass("read");
+            postTextDiv.removeClass("unread");
+            decrementUnreadCountFor(loadedFeed);
+        } else {
+            postTitleDiv.find("a").addClass("unread");
+            postTitleDiv.find("a").removeClass("read");
+            postTextDiv.addClass("unread");
+            postTextDiv.removeClass("read");
+            incrementUnreadCountFor(loadedFeed);
+        }
+    };
 };
 
 var alreadySubscribedTo = function(url) {
-    return false;
+    return feedsHash.hasOwnProperty(url);
 };
 
 
