@@ -13,6 +13,8 @@ body { background-color:#DDDDDD; }
 
 .feedtitle { cursor:pointer; }
 
+.feedbutton { margin-left:2px; margin-top:2px; margin-right:10px; }
+
 .leftpane { position:fixed; }
 
 .leftpane { float:left; width:30%; }

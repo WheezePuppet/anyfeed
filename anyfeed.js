@@ -27,18 +27,30 @@ var init = function() {
 var addFeedToMemoryAndDisplay = function(newfeed) {
 
     // 1a. Create a feed div for this new feed.
-    var feedDiv = $("<div>"),    // (create a new feed div)
-        feedsDiv = $("#feeds");  // (get the existing feeds div)
-    feedDiv.addClass("feedtitle");
-    feedDiv.text(newfeed.title);
-    feedDiv.data("feed",newfeed);
-    feedDiv.click(startPopulatePostsDivWithFeedContents);
+    var feedDiv = $("<div>"),       // (create a new feed div)
+        feedTitleSpan = $("<span>"),  // (create a new feed title div)
+        feedButtonSpan = $("<span>"), // (create a new feed button div)
+        feedsDiv = $("#feeds");     // (get the existing feeds div)
 
-    // 1b. Add this feed div to the feeds div.
+    feedTitleSpan.addClass("feedtitle");
+    feedTitleSpan.text(newfeed.title);
+    feedTitleSpan.data("feed",newfeed);
+    feedTitleSpan.click(startPopulatePostsDivWithFeedContents);
+
+    feedButtonSpan.addClass("feedbutton");
+    feedButtonSpan.html("<img src=dot.png />");
+    feedButtonSpan.data("feed",newfeed);
+    feedButtonSpan.click(renameFeed);
+
+    // 1b. String together these new divs.
+    feedDiv.append(feedButtonSpan);
+    feedDiv.append(feedTitleSpan);
     feedsDiv.append(feedDiv);
 
     // 2. Add this feed to the data structures (feedsArray, feedsHash).
     newfeed["feedDiv"] = feedDiv;
+    newfeed["feedButtonSpan"] = feedButtonSpan;
+    newfeed["feedTitleSpan"] = feedTitleSpan;
     feedsArray.push(newfeed);
     feedsHash[newfeed.url] = newfeed;
 
@@ -56,8 +68,26 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
     }
 };
 
+var renameFeed = function() {
+    var feed = $(this).data("feed"),
+        oldtitle = feed.title,
+        newtitle = prompt("Enter new feed title:", oldtitle);
+    $.ajax({
+        url : "http://rosemary.umw.edu/~stephen/anyfeed/renameFeed.php?url="+
+            escape(feed.url) + "&title=" + escape(newtitle),
+        type : "GET",
+        dataType : "text"
+    }).done(function(newtitle) {
+        feed.title = newtitle;
+        updateFeedInFeedsDiv(feed);
+        if (feed == loadedFeed) {
+            $("#poststitle").text(newtitle);
+        }
+    });
+};
+
 var startUpdateUnreadCountFromCachedContents = function(feed) {
-    var feedDiv = feed["feedDiv"],
+    var feedTitleSpan = feed["feedTitleSpan"],
         cachedContent = feed["contents"],
         guids = [];
 
@@ -91,18 +121,22 @@ var decrementUnreadCountFor = function(feed) {
 
 var setUnreadCount = function(feed, unreadCount) {
     feed.unreadCount = unreadCount;
-    if (unreadCount == 0) {
-        feed.feedDiv.html("<span class=feedcaughtup>" + feed.title +
+    updateFeedInFeedsDiv(feed);
+};
+
+var updateFeedInFeedsDiv = function(feed) {
+    if (feed.unreadCount == 0) {
+        feed.feedTitleSpan.html("<span class=feedcaughtup>" + feed.title +
             "</span>");
-        feed.feedDiv.append(" <span class=zerounreadcount>(0)");
+        feed.feedTitleSpan.append(" <span class=zerounreadcount>(0)");
     } else {
-        feed.feedDiv.html("<span class=feednotcaughtup>" + feed.title +
+        feed.feedTitleSpan.html("<span class=feednotcaughtup>" + feed.title +
             "</span>");
-        feed.feedDiv.append(" <span class=nonzerounreadcount>(" + 
-            unreadCount + ")</span>");
+        feed.feedTitleSpan.append(" <span class=nonzerounreadcount>(" + 
+            feed.unreadCount + ")</span>");
     }
     if (feed == loadedFeed) {
-        if (unreadCount == 0) {
+        if (feed.unreadCount == 0) {
             $("#poststitle").addClass("feedcaughtup");
             $("#poststitle").removeClass("feednotcaughtup");
         } else {
@@ -189,10 +223,10 @@ var loadFeedThenCall = function(url, callback) {
 var startPopulatePostsDivWithFeedContents = function() {
     var url = $(this).data("feed").url;
     if (loadedFeed != null) {
-        loadedFeed.feedDiv.removeClass("activeFeed");
+        loadedFeed.feedTitleSpan.removeClass("activeFeed");
     }
     loadedFeed = $(this).data("feed");
-    loadedFeed.feedDiv.addClass("activeFeed");
+    loadedFeed.feedTitleSpan.addClass("activeFeed");
     loadFeedThenCall(url, continuePopulatePostsDivWithFeedContents(url));
 };
 
@@ -283,11 +317,11 @@ var startTogglePostReadness = function() {
 
 var finishTogglePostReadness = function(postDiv) {
 
-    return function(data) {
+    return function(readness) {
 
         var postTitleDiv = postDiv.find(".posttitle"),
             postTextDiv = postDiv.find(".posttext");
-        if (data.indexOf("read") == 0) {
+        if (readness.indexOf("read") == 0) {
             postTitleDiv.find("a").addClass("read");
             postTitleDiv.find("a").removeClass("unread");
             postTextDiv.addClass("read");
