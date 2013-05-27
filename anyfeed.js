@@ -88,6 +88,7 @@ var renameFeed = function() {
     var feed = $(this).data("feed"),
         oldtitle = feed.title,
         newtitle = prompt("Enter new feed title:", oldtitle);
+    if (newtitle == null) return;
     $.ajax({
         url : "http://rosemary.umw.edu/~stephen/anyfeed/renameFeed.php?url="+
             escape(feed.url) + "&title=" + escape(newtitle),
