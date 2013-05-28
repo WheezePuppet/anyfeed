@@ -33,3 +33,5 @@ a.unread { color:blue; }
 .feednotcaughtup { color:black; }
 
 .activeFeed { background-color:yellow; }
+
+#import { margin-bottom:20px; margin-left:auto; margin-right:auto; }

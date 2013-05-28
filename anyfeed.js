@@ -19,12 +19,15 @@ var feedsHash = {};
 // The feed whose posts are currently in the posts div.
 var loadedFeed;
 
+
+// -------------------------------- init ----------------------------------
 var init = function() {
     startLoadFeedsFromServer();
-    $("#addnewfeed").click(addTypedFeed);
+    $("#addnewfeed").click(addNewlyTypedFeed);
     $("#import").click(importOpml);
 };
 
+// ----------------------------- import OPML ------------------------------
 var importOpml = function() {
     $.ajax({
         url : "http://rosemary.umw.edu/~stephen/anyfeed/subscriptions.xml",
@@ -40,50 +43,8 @@ var importOpml = function() {
     });
 };
 
-var addFeedToMemoryAndDisplay = function(newfeed) {
 
-    // 1a. Create a feed div for this new feed.
-    var feedDiv = $("<div>"),       // (create a new feed div)
-        feedTitleSpan = $("<span>"),  // (create a new feed title div)
-        feedButtonSpan = $("<span>"), // (create a new feed button div)
-        feedsDiv = $("#feeds");     // (get the existing feeds div)
-
-    feedTitleSpan.addClass("feedtitle");
-    feedTitleSpan.text(newfeed.title);
-    feedTitleSpan.data("feed",newfeed);
-    feedTitleSpan.click(startPopulatePostsDivWithFeedContents);
-
-    feedButtonSpan.addClass("feedbutton");
-    feedButtonSpan.html("<img src=dot.png />");
-    feedButtonSpan.data("feed",newfeed);
-    feedButtonSpan.click(renameFeed);
-
-    // 1b. String together these new divs.
-    feedDiv.append(feedButtonSpan);
-    feedDiv.append(feedTitleSpan);
-    feedsDiv.append(feedDiv);
-
-    // 2. Add this feed to the data structures (feedsArray, feedsHash).
-    newfeed["feedDiv"] = feedDiv;
-    newfeed["feedButtonSpan"] = feedButtonSpan;
-    newfeed["feedTitleSpan"] = feedTitleSpan;
-    feedsArray.push(newfeed);
-    feedsHash[newfeed.url] = newfeed;
-
-    // 3. Update the feed with its "unread" count.
-    if (newfeed.contents === undefined) {
-        // Cache empty for this feed. Fill it.        
-        loadFeedThenCall(newfeed.url, 
-            function(data) {
-                newfeed.contents = $(data);
-                startUpdateUnreadCountFromCachedContents(newfeed);
-            }
-        );
-    } else {
-        startUpdateUnreadCountFromCachedContents(newfeed);
-    }
-};
-
+// ----------------------------- rename feed -------------------------------
 var renameFeed = function() {
     var feed = $(this).data("feed"),
         oldtitle = feed.title,
@@ -163,6 +124,7 @@ var updateFeedInFeedsDiv = function(feed) {
     }
 };
 
+// ------------------------------ load feeds ------------------------------
 var startLoadFeedsFromServer = function() {
     feedsArray = [];
     feedsHash = {};
@@ -190,7 +152,8 @@ var finishLoadFeedsFromServer = function(data) {
     });
 };
 
-var addTypedFeed = function() {
+// ------------------------------ add feeds -------------------------------
+var addNewlyTypedFeed = function() {
     var url = $("#newfeedurl").val();
     startAddNewFeed(url);
     $("#newfeedurl").val("");
@@ -222,6 +185,10 @@ var finishAddNewFeed = function(url, newtitle) {
     };
 }
 
+var alreadySubscribedTo = function(url) {
+    return feedsHash.hasOwnProperty(url);
+};
+
 var addFeedToServer = function(newfeed) {
     $.ajax({
         url : "http://rosemary.umw.edu/~stephen/anyfeed/addFeed.php",
@@ -230,6 +197,50 @@ var addFeedToServer = function(newfeed) {
         contentType : "text/json",
         dataType : "xml"
     });
+};
+
+var addFeedToMemoryAndDisplay = function(newfeed) {
+
+    // 1a. Create a feed div for this new feed.
+    var feedDiv = $("<div>"),       // (create a new feed div)
+        feedTitleSpan = $("<span>"),  // (create a new feed title div)
+        feedButtonSpan = $("<span>"), // (create a new feed button div)
+        feedsDiv = $("#feeds");     // (get the existing feeds div)
+
+    feedTitleSpan.addClass("feedtitle");
+    feedTitleSpan.text(newfeed.title);
+    feedTitleSpan.data("feed",newfeed);
+    feedTitleSpan.click(startPopulatePostsDivWithFeedContents);
+
+    feedButtonSpan.addClass("feedbutton");
+    feedButtonSpan.html("<img src=dot.png />");
+    feedButtonSpan.data("feed",newfeed);
+    feedButtonSpan.click(renameFeed);
+
+    // 1b. String together these new divs.
+    feedDiv.append(feedButtonSpan);
+    feedDiv.append(feedTitleSpan);
+    feedsDiv.append(feedDiv);
+
+    // 2. Add this feed to the data structures (feedsArray, feedsHash).
+    newfeed["feedDiv"] = feedDiv;
+    newfeed["feedButtonSpan"] = feedButtonSpan;
+    newfeed["feedTitleSpan"] = feedTitleSpan;
+    feedsArray.push(newfeed);
+    feedsHash[newfeed.url] = newfeed;
+
+    // 3. Update the feed with its "unread" count.
+    if (newfeed.contents === undefined) {
+        // Cache empty for this feed. Fill it.        
+        loadFeedThenCall(newfeed.url, 
+            function(data) {
+                newfeed.contents = $(data);
+                startUpdateUnreadCountFromCachedContents(newfeed);
+            }
+        );
+    } else {
+        startUpdateUnreadCountFromCachedContents(newfeed);
+    }
 };
 
 var loadFeedThenCall = function(url, callback) {
@@ -241,6 +252,8 @@ var loadFeedThenCall = function(url, callback) {
     }).done(callback);
 };
 
+
+// ------------------------ populate posts div -----------------------------
 var startPopulatePostsDivWithFeedContents = function() {
     var url = $(this).data("feed").url;
     if (loadedFeed != null) {
@@ -330,6 +343,7 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
     };
 };
 
+// ------------------------- toggle readness -----------------------------
 var startTogglePostReadness = function() {
     var post = $(this).data("post");
     $.ajax({
@@ -362,11 +376,6 @@ var finishTogglePostReadness = function(postDiv) {
         }
     };
 };
-
-var alreadySubscribedTo = function(url) {
-    return feedsHash.hasOwnProperty(url);
-};
-
 
 
 init();
