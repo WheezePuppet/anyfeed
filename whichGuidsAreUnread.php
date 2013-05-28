@@ -9,7 +9,7 @@
     $output = array();
 
     $conn = mysql_connect("localhost","stephen","iloverae");
-    mysql_select_db("ooc");
+    mysql_select_db("anyfeed");
 
     for ($i=0; $i<count($input); $i++) {
         $guid = $input[$i];

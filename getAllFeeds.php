@@ -1,7 +1,7 @@
 <?php
     header("Content-Type: text/xml");
     $conn = mysql_connect("localhost","stephen","iloverae");
-    mysql_select_db("ooc");
+    mysql_select_db("anyfeed");
 
     print "<feeds>";
     $q = mysql_query("select * from feeds where username='stephen'");

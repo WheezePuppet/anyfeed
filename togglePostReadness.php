@@ -3,7 +3,7 @@
     $guid = $_GET["guid"];
 
     $conn = mysql_connect("localhost","stephen","iloverae");
-    mysql_select_db("ooc");
+    mysql_select_db("anyfeed");
 
     $q = mysql_query("select count(*) from posts where guid='$guid'");
     $row = mysql_fetch_row($q);
