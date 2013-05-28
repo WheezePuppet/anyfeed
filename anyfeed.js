@@ -292,7 +292,13 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 title = feedsHash[url].title + " (" + title + ")";
             }
 
-            postsDiv.html("<div id=poststitle>" + title + "</div>");
+            postsDiv.html("<div style=\"vertical-align:middle;\">" +
+                "<span id=poststitle>" + title + "</span>" +
+                "<span><button id=markAllRead>Mark all read</button></span>" +
+                "<span><button id=markAllUnread>Mark all unread</button></span>" +
+                "</div>");
+            $("#markAllRead").click(markAllPostsRead);
+            $("#markAllUnread").click(markAllPostsUnread);
 
             if (feed.unreadCount == 0) {
                 $("#poststitle").addClass("feedcaughtup");
@@ -308,6 +314,7 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                     postTextDiv = $("<div>"),
                     toAppend = "";
 
+                postDiv.addClass("post");
                 postTitleDiv.addClass("posttitle");
                 postTextDiv.addClass("posttext");
                 
@@ -330,9 +337,11 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 if ($.inArray(post.find("guid").text(),unread) == -1) {
                     postTitleDiv.find("a").addClass("read");
                     postTextDiv.addClass("read");
+                    postDiv.addClass("read");
                 } else {
                     postTitleDiv.find("a").addClass("unread");
                     postTextDiv.addClass("unread");
+                    postDiv.addClass("unread");
                 }
 
                 postDiv.append(postTitleDiv);
@@ -344,6 +353,24 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
 };
 
 // ------------------------- toggle readness -----------------------------
+var markAllPostsRead = function() {
+    var postDivs = $("#posts > .post");
+    postDivs.each(function() { 
+        if ($(this).hasClass("unread")) {
+            $(this).trigger("click");
+        }
+    });
+};
+
+var markAllPostsUnread = function() {
+    var postDivs = $("#posts > .post");
+    postDivs.each(function() { 
+        if ($(this).hasClass("read")) {
+            $(this).trigger("click");
+        }
+    });
+};
+
 var startTogglePostReadness = function() {
     var post = $(this).data("post");
     $.ajax({
@@ -366,12 +393,16 @@ var finishTogglePostReadness = function(postDiv) {
             postTitleDiv.find("a").removeClass("unread");
             postTextDiv.addClass("read");
             postTextDiv.removeClass("unread");
+            postDiv.addClass("read");
+            postDiv.removeClass("unread");
             decrementUnreadCountFor(loadedFeed);
         } else {
             postTitleDiv.find("a").addClass("unread");
             postTitleDiv.find("a").removeClass("read");
             postTextDiv.addClass("unread");
             postTextDiv.removeClass("read");
+            postDiv.addClass("unread");
+            postDiv.removeClass("read");
             incrementUnreadCountFor(loadedFeed);
         }
     };
