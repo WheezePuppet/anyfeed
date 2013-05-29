@@ -22,10 +22,46 @@ var loadedFeed;
 
 // -------------------------------- init ----------------------------------
 var init = function() {
-    startLoadFeedsFromServer();
     $("#addnewfeed").click(addNewlyTypedFeed);
     $("#import").click(importOpml);
+    var username = $.cookie("anyfeedUsername"),
+        password = $.cookie("anyfeedPassword");
+    if (username == undefined) {
+        promptForLogin();
+    } else {
+        tryLoggingInToServer(username, password);
+    }
 };
+
+var tryLoggingInToServer = function(username, password) {
+    $.ajax({
+        url : "http://rosemary.umw.edu/~stephen/anyfeed/login.php?" +
+            "username=" + escape(username) + "&password=" +
+            escape(password),
+        type : "GET",
+        dataType : "text"
+    }).done(function(data) {
+        if (data.indexOf("logged in") == 0) {
+            $("#logindialog").css("visibility","hidden");
+            $.cookie("anyfeedUsername", username);
+            $.cookie("anyfeedPassword", password);
+            $("#apptitle").text("anyfeed - " + username);
+            startLoadFeedsFromServer();
+        } else {
+            promptForLogin();
+        }
+    });
+};
+
+var promptForLogin = function() {
+    $("#loginSubmit").click(function() {
+        var username = $("#username").val(),
+            password = CryptoJS.SHA1($("#password").val());
+        tryLoggingInToServer(username, password);
+    });
+    $("#logindialog").css("visibility","visible");
+};
+
 
 // ----------------------------- import OPML ------------------------------
 var importOpml = function() {

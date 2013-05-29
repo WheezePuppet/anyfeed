@@ -1,5 +1,6 @@
 <?php
     header("Content-Type: text/json");
+    $username = $_COOKIE["anyfeedUsername"];
 
     // Input: a JSON array of guids.
     // Output: another JSON array of guids, a subset of the input, including
@@ -14,7 +15,7 @@
     for ($i=0; $i<count($input); $i++) {
         $guid = $input[$i];
         $q = mysql_query("select count(*) from posts " .
-            "where username='stephen' and guid='$guid'");
+            "where username='$username' and guid='$guid'");
         $row = mysql_fetch_row($q);
         if ($row[0] == 0) {
             array_push($output,$guid);
