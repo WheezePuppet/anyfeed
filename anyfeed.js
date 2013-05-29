@@ -65,8 +65,12 @@ var promptForLogin = function() {
 
 // ----------------------------- import OPML ------------------------------
 var importOpml = function() {
+    var url = prompt("Enter the URL to your OPML file (in XML format):");
+    if (url == "") {
+        url = "http://rosemary.umw.edu/~stephen/anyfeed/subscriptions.xml";
+    }
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/anyfeed/subscriptions.xml",
+        url : url,
         type : "GET",
         dataType : "xml"
     }).done(function(data) {
