@@ -44,8 +44,7 @@ var init = function() {
 
 var tryLoggingInToServer = function(username, password) {
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/anyfeed/login.php?" +
-            "username=" + escape(username) + "&password=" +
+        url : "login.php?username=" + escape(username) + "&password=" +
             escape(password),
         type : "GET",
         dataType : "text"
@@ -88,8 +87,7 @@ var logout = function() {
     $.cookies.del("anyfeedUsername"); // doesn't work. $@%&*!!
     $.cookies.del("anyfeedPassword");
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/anyfeed/logout.php?" +
-            "username=" + escape(username),
+        url : "logout.php?username=" + escape(username),
         type : "GET",
         dataType : "text"
     }).done(function(data) {
@@ -105,7 +103,7 @@ var logout = function() {
 var importOpml = function() {
     var url = prompt("Enter the URL to your OPML file (in XML format):");
     if (url == "") {
-        url = "http://rosemary.umw.edu/~stephen/anyfeed/subscriptions.xml";
+        url = "subscriptions.xml";
     }
     $.ajax({
         url : url,
@@ -128,8 +126,8 @@ var renameFeed = function() {
         newtitle = prompt("Enter new feed title:", oldtitle);
     if (newtitle == null) return;
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/anyfeed/renameFeed.php?url="+
-            escape(hoveredFeed.url) + "&title=" + escape(newtitle),
+        url : "renameFeed.php?url=" + escape(hoveredFeed.url) + 
+            "&title=" + escape(newtitle),
         type : "GET",
         dataType : "text"
     }).done(function(newtitle) {
@@ -145,8 +143,7 @@ var renameFeed = function() {
 var removeFeed = function() {
     var url = hoveredFeed.url;
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/anyfeed/removeFeed.php?url="+
-            escape(hoveredFeed.url),
+        url : "removeFeed.php?url=" + escape(hoveredFeed.url),
         type : "GET",
         dataType : "text"
     }).done(function(data) {
@@ -169,8 +166,7 @@ var startUpdateUnreadCountFromCachedContents = function(feed) {
     });
 
     $.ajax({
-        url : 
-          "http://rosemary.umw.edu/~stephen/anyfeed/whichGuidsAreUnread.php",
+        url : "whichGuidsAreUnread.php",
         data : JSON.stringify(guids),
         type : "POST",
         dataType : "json",
@@ -224,7 +220,7 @@ var startLoadFeedsFromServer = function() {
     feedsArray = [];
     feedsHash = {};
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/anyfeed/getAllFeeds.php",
+        url : "getAllFeeds.php",
         type : "GET",
         dataType : "xml"
     }).done(finishLoadFeedsFromServer);
@@ -286,7 +282,7 @@ var alreadySubscribedTo = function(url) {
 
 var addFeedToServer = function(newfeed) {
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/anyfeed/addFeed.php",
+        url : "addFeed.php",
         type : "POST",
         data : JSON.stringify(newfeed),
         contentType : "text/json",
@@ -341,8 +337,7 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
 
 var loadFeedThenCall = function(url, callback) {
     $.ajax({
-        url : "http://rosemary.umw.edu/~stephen/rssproxy.php?url=" +
-            escape(url),
+        url : "rssproxy.php?url=" + escape(url),
         type : "GET",
         dataType : "xml"
     }).done(callback);
@@ -371,8 +366,7 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
         });
 
         $.ajax({
-            url : 
-            "http://rosemary.umw.edu/~stephen/anyfeed/whichGuidsAreUnread.php",
+            url : "whichGuidsAreUnread.php",
             data : JSON.stringify(guids),
             type : "POST",
             dataType : "json",
@@ -470,9 +464,7 @@ var markAllPostsUnread = function() {
 var startTogglePostReadness = function() {
     var post = $(this).data("post");
     $.ajax({
-        url :
-        "http://rosemary.umw.edu/~stephen/anyfeed/togglePostReadness?guid=" +
-            escape(post.find("guid").text()),
+        url : "togglePostReadness?guid=" + escape(post.find("guid").text()),
         type : "GET",
         dataType : "text"
     }).done(finishTogglePostReadness($(this)));
