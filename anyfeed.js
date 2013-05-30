@@ -2,13 +2,17 @@
 $(document).ready(function() {
 
 
-// Array of feed objects, each of which has a title, and link, a url, and
-//   possibly cached contents and unread count.
+// Array of feed objects, each of which has a title, and link, a url,
+//   (possibly) cached contents, unread count, feedDiv, feedButtonSpan, and
+//   feedTitleSpan.
 //   The title is the human-readable name.
 //   The link is the URL to the human-readable blog.
 //   The url is the actual URL of the RSS feed (non-human-readable).
 //   The contents is the jQuery-ified XML-parsed feed response.
 //   The unreadCount is an integer of the number of unread posts.
+//   The feedDiv is the outermost div of the feed as displayed on LHS.
+//   The feedButtonSpan is the inner span surrounding the popup menu "dot".
+//   The feedTitleSpan is the inner span surrounding the feed's title.
 var feedsArray = [];
 
 // A hashtable of those very same feed objects, indexed by url. (More
@@ -19,11 +23,15 @@ var feedsHash = {};
 // The feed whose posts are currently in the posts div.
 var loadedFeed;
 
+// The feed whose "dot" was the most recent to be hovered over.
+var hoveredFeed;
 
 // -------------------------------- init ----------------------------------
 var init = function() {
     var username = $.cookies.get("anyfeedUsername"),
         password = $.cookies.get("anyfeedPassword");
+    $("#renamefeed").click(renameFeed);
+    $("#removefeed").click(removeFeed);
     $("#addnewfeed").click(addNewlyTypedFeed);
     $("#import").click(importOpml);
     $("#logout").click(logout);
@@ -114,24 +122,41 @@ var importOpml = function() {
 
 // ----------------------------- rename feed -------------------------------
 var renameFeed = function() {
-    var feed = $(this).data("feed"),
-        oldtitle = feed.title,
+    var oldtitle = hoveredFeed.title,
         newtitle = prompt("Enter new feed title:", oldtitle);
     if (newtitle == null) return;
     $.ajax({
         url : "http://rosemary.umw.edu/~stephen/anyfeed/renameFeed.php?url="+
-            escape(feed.url) + "&title=" + escape(newtitle),
+            escape(hoveredFeed.url) + "&title=" + escape(newtitle),
         type : "GET",
         dataType : "text"
     }).done(function(newtitle) {
-        feed.title = newtitle;
-        updateFeedInFeedsDiv(feed);
-        if (feed == loadedFeed) {
+        hoveredFeed.title = newtitle;
+        updateFeedInFeedsDiv(hoveredFeed);
+        if (hoveredFeed == loadedFeed) {
             $("#poststitle").text(newtitle + " (" + oldtitle + ")");
         }
     });
 };
 
+// ---------------------- remove feed (unsubscribe) ------------------------
+var removeFeed = function() {
+    var url = hoveredFeed.url;
+    $.ajax({
+        url : "http://rosemary.umw.edu/~stephen/anyfeed/removeFeed.php?url="+
+            escape(hoveredFeed.url),
+        type : "GET",
+        dataType : "text"
+    }).done(function(data) {
+        if (data.indexOf("unsubscribed") == 0) {
+            hoveredFeed.feedDiv.remove();
+        } else {
+            alert("Unable to unsubscribe from " + hoveredFeed.title + "!");
+        }
+    });
+};
+
+// ---------------------------- unread count ------------------------------
 var startUpdateUnreadCountFromCachedContents = function(feed) {
     var feedTitleSpan = feed["feedTitleSpan"],
         cachedContent = feed["contents"],
@@ -270,10 +295,10 @@ var addFeedToServer = function(newfeed) {
 var addFeedToMemoryAndDisplay = function(newfeed) {
 
     // 1a. Create a feed div for this new feed.
-    var feedDiv = $("<div>"),       // (create a new feed div)
+    var feedDiv = $("<div>"),         // (create a new feed div)
         feedTitleSpan = $("<span>"),  // (create a new feed title div)
         feedButtonSpan = $("<span>"), // (create a new feed button div)
-        feedsDiv = $("#feeds");     // (get the existing feeds div)
+        feedsDiv = $("#feeds");       // (get the existing feeds div)
 
     feedTitleSpan.addClass("feedtitle");
     feedTitleSpan.text(newfeed.title);
@@ -283,7 +308,8 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
     feedButtonSpan.addClass("feedbutton");
     feedButtonSpan.html("<img src=dot.png />");
     feedButtonSpan.data("feed",newfeed);
-    feedButtonSpan.click(renameFeed);
+    feedButtonSpan.addpopupmenu("feedpopupmenu");
+    feedButtonSpan.mouseenter(function() { hoveredFeed = newfeed; });
 
     // 1b. String together these new divs.
     feedDiv.append(feedButtonSpan);

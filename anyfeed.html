@@ -17,13 +17,6 @@
 <title>anyfeed</title>
 </head>
 <body>
-<a href="http://www.mlb.com" data-popupmenu="popeye">Dude man</a>
-
-<ul id="popeye" class="jqpopupmenu">
-    <li><a href="#">Brutus</a></li>
-    <li><a href="#">Olive</a></li>
-    <li><a href="#">Goon</a></li>
-</ul>
 
 <div id=main>
 <div class=leftpane>
@@ -49,6 +42,13 @@
     </table>
     </div>
 </div>
+
+<!-- The popup menu for the feed "dot," which will be dynamically 
+     repositioned. -->
+<ul id="feedpopupmenu" class="jqpopupmenu popupmenu">
+    <li><a id=renamefeed >Rename...</a></li>
+    <li><a id=removefeed >Unsubscribe</a></li>
+</ul>
 
 </body>
 </html>

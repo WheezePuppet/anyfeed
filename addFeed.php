@@ -1,5 +1,6 @@
 <?php
-    $username = $_COOKIE["anyfeedUsername"];
+    require "ensureLoggedIn.php";
+    $username = $_SESSION["username"];
     $input = json_decode($HTTP_RAW_POST_DATA);
     $conn = mysql_connect("localhost","stephen","iloverae");
     mysql_select_db("anyfeed");

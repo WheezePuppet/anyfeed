@@ -20,12 +20,11 @@ a.unread { color:blue; }
 
 .feedbutton { margin-left:2px; margin-top:2px; margin-right:10px; }
 
-/* .leftpane { position:fixed; } */
-
 .leftpane { float:left; width:25%; overflow:auto; height:100%; }
 
 #posts { float:right; width:73%; overflow:auto; height:100%; }
 
+.popupmenu li { cursor:pointer; }
 
 .zerounreadcount, .nonzerounreadcount { font-size:10pt; }
 .nonzerounreadcount { color:blue; }
