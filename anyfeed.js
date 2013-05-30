@@ -52,8 +52,10 @@ var tryLoggingInToServer = function(username, password) {
     }).done(function(data) {
         if (data.indexOf("logged in") == 0) {
             $("#logindialog").css("visibility","hidden");
-            $.cookies.set("anyfeedUsername", username);
-            $.cookies.set("anyfeedPassword", password);
+            $.cookies.set("anyfeedUsername", username, 
+                { expiresAt: new Date(2099,1,1)} );
+            $.cookies.set("anyfeedPassword", password, 
+                { expiresAt: new Date(2099,1,1)} );
             $("#apptitle").text("anyfeed - " + username);
             $("#logout").css("visibility","visible");
             startLoadFeedsFromServer();
