@@ -22,10 +22,11 @@ var loadedFeed;
 
 // -------------------------------- init ----------------------------------
 var init = function() {
+    var username = $.cookies.get("anyfeedUsername"),
+        password = $.cookies.get("anyfeedPassword");
     $("#addnewfeed").click(addNewlyTypedFeed);
     $("#import").click(importOpml);
-    var username = $.cookie("anyfeedUsername"),
-        password = $.cookie("anyfeedPassword");
+    $("#logout").click(logout);
     if (username == undefined) {
         promptForLogin();
     } else {
@@ -43,25 +44,52 @@ var tryLoggingInToServer = function(username, password) {
     }).done(function(data) {
         if (data.indexOf("logged in") == 0) {
             $("#logindialog").css("visibility","hidden");
-            $.cookie("anyfeedUsername", username);
-            $.cookie("anyfeedPassword", password);
+            $.cookies.set("anyfeedUsername", username);
+            $.cookies.set("anyfeedPassword", password);
             $("#apptitle").text("anyfeed - " + username);
+            $("#logout").css("visibility","visible");
             startLoadFeedsFromServer();
         } else {
+            $("#loginMessage").text("Login failed -- try again.");
             promptForLogin();
         }
     });
 };
 
 var promptForLogin = function() {
-    $("#loginSubmit").click(function() {
+    var getDataAndDoLogin = function() {
+        $("#loginMessage").text("");
         var username = $("#username").val(),
-            password = CryptoJS.SHA1($("#password").val());
+            password = CryptoJS.SHA1($("#password").val()).toString(
+                                                        CryptoJS.enc.Base64);
         tryLoggingInToServer(username, password);
+    };
+    $("#password").keyup(function(event) {
+        if (event.keyCode == 13) {
+            getDataAndDoLogin();
+        }
     });
+    $("#loginSubmit").click(getDataAndDoLogin);
     $("#logindialog").css("visibility","visible");
 };
 
+var logout = function() {
+    var username = $.cookies.get("anyfeedUsername");
+    $.cookies.del("anyfeedUsername"); // doesn't work. $@%&*!!
+    $.cookies.del("anyfeedPassword");
+    $.ajax({
+        url : "http://rosemary.umw.edu/~stephen/anyfeed/logout.php?" +
+            "username=" + escape(username),
+        type : "GET",
+        dataType : "text"
+    }).done(function(data) {
+        $("#logout").css("visibility","hidden");
+        $("#apptitle").text("anyfeed");
+        $("#feeds").html("");
+        $("#posts").html("");
+        promptForLogin();
+    });
+};
 
 // ----------------------------- import OPML ------------------------------
 var importOpml = function() {

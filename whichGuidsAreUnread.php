@@ -1,6 +1,7 @@
 <?php
     header("Content-Type: text/json");
-    $username = $_COOKIE["anyfeedUsername"];
+    require_once "ensureLoggedIn.php";
+    $username = $_SESSION["username"];
 
     // Input: a JSON array of guids.
     // Output: another JSON array of guids, a subset of the input, including

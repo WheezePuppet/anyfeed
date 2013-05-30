@@ -1,6 +1,7 @@
 <?php
     header("Content-Type: text/xml");
-    $username = $_COOKIE["anyfeedUsername"];
+    require_once "ensureLoggedIn.php";
+    $username = $_SESSION["username"];
     $conn = mysql_connect("localhost","stephen","iloverae");
     mysql_select_db("anyfeed");
 

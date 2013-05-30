@@ -1,5 +1,6 @@
 <?php
-    $username = $_COOKIE["anyfeedUsername"];
+    require_once "ensureLoggedIn.php";
+    $username = $_SESSION["username"];
     $guid = mysql_real_escape_string($_GET["guid"]);
     $guid = $_GET["guid"];
 

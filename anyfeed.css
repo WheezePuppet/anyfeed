@@ -20,7 +20,7 @@ a.unread { color:blue; }
 
 .feedbutton { margin-left:2px; margin-top:2px; margin-right:10px; }
 
-.leftpane { position:fixed; }
+/* .leftpane { position:fixed; } */
 
 .leftpane { float:left; width:25%; overflow:auto; height:100%; }
 
@@ -61,3 +61,7 @@ a.unread { color:blue; }
 #username, #password { width:180px; }
 
 #logincontrols { margin:auto; }
+
+#loginMessage { font-size:10pt; font-weight:bold; }
+
+#logout { visibility:hidden; }
