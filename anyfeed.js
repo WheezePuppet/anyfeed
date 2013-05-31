@@ -218,7 +218,7 @@ var updateFeedInFeedsDiv = function(feed) {
 
 // ------------------------------ load feeds ------------------------------
 var startLoadFeedsFromServer = function() {
-    feedsArray = [];
+    feedsArray = [0];
     feedsHash = {};
     $.ajax({
         url : "getAllFeeds.php",
@@ -243,6 +243,16 @@ var finishLoadFeedsFromServer = function(data) {
             };
         addFeedToMemoryAndDisplay(feed);
     });
+    displayAllFeeds();
+};
+
+var displayAllFeeds = function() {
+    // Go through the feedsArray, one by one (since they were inserted in
+    // order), and add each of their prefabricated feedDivs to the 
+    // feedsDiv. 
+    for (var i=1, len=feedsArray.length; i<len; i++) {
+        $("#feeds").append(feedsArray[i].feedDiv);
+    }
 };
 
 // ------------------------------ add feeds -------------------------------
@@ -273,6 +283,7 @@ var finishAddNewFeed = function(url, newtitle) {
             alert("Already subscribed to " + url + "!");
         } else {
             addFeedToMemoryAndDisplay(newfeed);
+            $("#feeds").append(newfeed.feedDiv);
             addFeedToServer(newfeed);
         }
     };
@@ -314,13 +325,18 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
     // 1b. String together these new divs.
     feedDiv.append(feedButtonSpan);
     feedDiv.append(feedTitleSpan);
-    feedsDiv.append(feedDiv);
+    //feedsDiv.append(feedDiv);
 
     // 2. Add this feed to the data structures (feedsArray, feedsHash).
     newfeed["feedDiv"] = feedDiv;
     newfeed["feedButtonSpan"] = feedButtonSpan;
     newfeed["feedTitleSpan"] = feedTitleSpan;
-    feedsArray.push(newfeed);
+
+    if (newfeed.hasOwnProperty("num")) {
+        feedsArray[newfeed.num] = newfeed;
+    } else {
+        feedsArray.push(newfeed);
+    }
     feedsHash[newfeed.url] = newfeed;
 
     // 3. Update the feed with its "unread" count.
