@@ -2,12 +2,13 @@
 $(document).ready(function() {
 
 
-// Array of feed objects, each of which has a title, and link, a url,
+// Array of feed objects, each of which has a title, and link, a url, a num,
 //   (possibly) cached contents, unread count, feedDiv, feedButtonSpan, and
 //   feedTitleSpan.
 //   The title is the human-readable name.
 //   The link is the URL to the human-readable blog.
 //   The url is the actual URL of the RSS feed (non-human-readable).
+//   The num is the 1-based order number of the feed.
 //   The contents is the jQuery-ified XML-parsed feed response.
 //   The unreadCount is an integer of the number of unread posts.
 //   The feedDiv is the outermost div of the feed as displayed on LHS.
@@ -237,6 +238,7 @@ var finishLoadFeedsFromServer = function(data) {
             feed = {
                 title : feedElem.find("feedtitle").text(),
                 url : url,
+                num : feedElem.find("num").text(),
                 link : feedElem.find("feedlink").text(),
             };
         addFeedToMemoryAndDisplay(feed);
@@ -464,9 +466,11 @@ var markAllPostsUnread = function() {
 var startTogglePostReadness = function() {
     var post = $(this).data("post");
     $.ajax({
-        url : "togglePostReadness?guid=" + escape(post.find("guid").text()),
-        type : "GET",
-        dataType : "text"
+        url : "togglePostReadness",
+        data : JSON.stringify(post.find("guid").text()),
+        type : "POST",
+        dataType : "text",
+        contentType : "text/json"
     }).done(finishTogglePostReadness($(this)));
 };
 

@@ -16,7 +16,9 @@
     for ($i=0; $i<count($input); $i++) {
         $guid = $input[$i];
         $q = mysql_query("select count(*) from posts " .
-            "where username='$username' and guid='$guid'");
+            "where username='$username' and guid='" .
+            mysql_real_escape_string(
+                preg_replace('/[^(\x20-\x7F)]*/','', $guid)) . "'");
         $row = mysql_fetch_row($q);
         if ($row[0] == 0) {
             array_push($output,$guid);

@@ -11,8 +11,10 @@
         $feedtitle = str_replace('&','&amp;',$row["feedtitle"]);
         $feedurl = str_replace('&','&amp;',$row["feedurl"]);
         $feedlink = str_replace('&','&amp;',$row["feedlink"]);
+        $num = $row["num"];
         print "<feed>";
         print "<feedtitle>$feedtitle</feedtitle>";
+        print "<num>$num</num>";
         print "<feedurl>$feedurl</feedurl>";
         print "<feedlink>$feedlink</feedlink>";
         print "</feed>";

@@ -1,11 +1,13 @@
 <?php
     require_once "ensureLoggedIn.php";
-    $username = $_SESSION["username"];
-    $guid = mysql_real_escape_string($_GET["guid"]);
-    $guid = $_GET["guid"];
 
     $conn = mysql_connect("localhost","stephen","iloverae");
     mysql_select_db("anyfeed");
+
+    $username = $_SESSION["username"];
+    $guid = json_decode($HTTP_RAW_POST_DATA);
+    $guid = mysql_real_escape_string(
+        preg_replace('/[^(\x20-\x7F)]*/','', $guid));
 
     $q = mysql_query("select count(*) from posts where guid='$guid'");
     $row = mysql_fetch_row($q);
