@@ -204,11 +204,13 @@ var updateFeedInFeedsDiv = function(feed) {
         feed.feedTitleSpan.html("<span class=feedcaughtup>" + feed.title +
             "</span>");
         feed.feedTitleSpan.append(" <span class=zerounreadcount>(0)");
+        feed.feedDiv.find("img").attr("src","greyDot.png");
     } else {
         feed.feedTitleSpan.html("<span class=feednotcaughtup>" + feed.title +
             "</span>");
         feed.feedTitleSpan.append(" <span class=nonzerounreadcount>(" + 
             feed.unreadCount + ")</span>");
+        feed.feedDiv.find("img").attr("src","blueDot.png");
     }
     if (feed == loadedFeed) {
         if (feed.unreadCount == 0) {
@@ -341,7 +343,7 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
     feedTitleSpan.click(startPopulatePostsDivWithFeedContents);
 
     feedButtonSpan.addClass("feedbutton");
-    feedButtonSpan.html("<img src=dot.png />");
+    feedButtonSpan.html("<img src=greyDot.png />");
     feedButtonSpan.data("feed",newfeed);
     feedButtonSpan.addpopupmenu("feedpopupmenu");
     feedButtonSpan.mouseenter(function() { hoveredFeed = newfeed; });
