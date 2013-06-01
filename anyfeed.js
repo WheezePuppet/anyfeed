@@ -256,7 +256,9 @@ var displayAllFeeds = function() {
     // order), and add each of their prefabricated feedDivs to the 
     // feedsDiv. 
     for (var i=1, len=feedsArray.length; i<len; i++) {
-        $("#feeds").append(feedsArray[i].feedDiv);
+        if (feedsArray[i] !== undefined) {
+            $("#feeds").append(feedsArray[i].feedDiv);
+        }
     }
 };
 
