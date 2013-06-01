@@ -160,10 +160,12 @@ var removeFeed = function() {
 var startUpdateUnreadCountFromCachedContents = function(feed) {
     var feedTitleSpan = feed["feedTitleSpan"],
         cachedContent = feed["contents"],
-        guids = [];
+        guids = [],
+        channelLink = $(cachedContent).find("channel > link").first();
 
-    $(cachedContent).find("item > guid").each(function() {
-        guids.push($(this).text());
+    $(cachedContent).find("item").each(function() {
+        var guidIshThing = computeGuidIshThingFromItem(channelLink, $(this));
+        guids.push(guidIshThing);
     });
 
     $.ajax({
@@ -174,8 +176,8 @@ var startUpdateUnreadCountFromCachedContents = function(feed) {
         contentType : "text/json"
     }).done(
         function finishUpdateUnreadCountFromCachedContents(data) {
-feed.feedDiv.removeClass("loading2");
-feed.feedDiv.addClass("loading3");
+            feed.feedDiv.removeClass("loading2");
+            feed.feedDiv.addClass("loading3");
             var unread = $(data);
             setUnreadCount(feed, unread.length);
         });
@@ -383,10 +385,13 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
 
     return function(feedContents) {
 
-        var guids = [];
+        var guids = [],
+            channelLink = $(feedContents).find("channel > link").first();
 
-        $(feedContents).find("item > guid").each(function() {
-            guids.push($(this).text());
+        $(feedContents).find("item").each(function() {
+            var guidIshThing = 
+                computeGuidIshThingFromItem(channelLink, $(this));
+            guids.push(guidIshThing);
         });
 
         $.ajax({
@@ -446,9 +451,12 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 postTextDiv.append(post.find("description").text());
 
                 postDiv.data("post",post);
+                postDiv.data("channelLink",channelLink);
                 postDiv.click(startTogglePostReadness);
 
-                if ($.inArray(post.find("guid").text(),unread) == -1) {
+                if ($.inArray(
+                    computeGuidIshThingFromItem(channelLink,post),unread) 
+                        == -1) {
                     postTitleDiv.find("a").addClass("read");
                     postTextDiv.addClass("read");
                     postDiv.addClass("read");
@@ -486,10 +494,11 @@ var markAllPostsUnread = function() {
 };
 
 var startTogglePostReadness = function() {
-    var post = $(this).data("post");
+    var guid = computeGuidIshThingFromItem($(this).data("channelLink"),
+        $(this).data("post"));
     $.ajax({
         url : "togglePostReadness",
-        data : JSON.stringify(post.find("guid").text()),
+        data : JSON.stringify(guid),
         type : "POST",
         dataType : "text",
         contentType : "text/json"
@@ -522,6 +531,15 @@ var finishTogglePostReadness = function(postDiv) {
     };
 };
 
+// ----------------------------- util ----------------------------------
+var computeGuidIshThingFromItem = function(channelLink, item) {
+    var guidMaybe = item.find("guid");
+    if (guidMaybe.length != 0) {
+        return guidMaybe.first().text();
+    } else {
+        return channelLink.text() + item.find("link").first().text();
+    }
+};
 
 init();
 
