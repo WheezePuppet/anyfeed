@@ -1,8 +1,6 @@
 <?php
     require_once "ensureLoggedIn.php";
-
-    $conn = mysql_connect("localhost","stephen","iloverae");
-    mysql_select_db("anyfeed");
+    require_once "connectToDb.php";
 
     $username = $_SESSION["username"];
     $guid = json_decode($HTTP_RAW_POST_DATA);

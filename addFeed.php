@@ -1,9 +1,8 @@
 <?php
     require "ensureLoggedIn.php";
+    require_once "connectToDb.php";
     $username = $_SESSION["username"];
     $input = json_decode($HTTP_RAW_POST_DATA);
-    $conn = mysql_connect("localhost","stephen","iloverae");
-    mysql_select_db("anyfeed");
 
     $q = mysql_query("select max(num) from feeds where username='$username'");
     $newfeednum = 0;

@@ -1,6 +1,7 @@
 <?php
     header("Content-Type: text/json");
     require_once "ensureLoggedIn.php";
+    require_once "connectToDb.php";
     $username = $_SESSION["username"];
 
     // Input: a JSON array of guids.
@@ -9,9 +10,6 @@
 
     $input = json_decode($HTTP_RAW_POST_DATA);
     $output = array();
-
-    $conn = mysql_connect("localhost","stephen","iloverae");
-    mysql_select_db("anyfeed");
 
     for ($i=0; $i<count($input); $i++) {
         $guid = $input[$i];

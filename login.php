@@ -1,9 +1,8 @@
 <?php
     session_start();
+    require_once "connectToDb.php";
     $username = $_GET["username"];
     $password = $_GET["password"];
-    mysql_connect("localhost","stephen","iloverae");
-    mysql_select_db("anyfeed");
     $q = mysql_query("select count(*) from users " .
         "where username='$username' and password='$password'");
     $row = mysql_fetch_row($q);

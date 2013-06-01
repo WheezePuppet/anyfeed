@@ -1,9 +1,8 @@
 <?php
     require "ensureLoggedIn.php";
+    require_once "connectToDb.php";
     $username = $_SESSION["username"];
     $url = $_GET["url"];
-    $conn = mysql_connect("localhost","stephen","iloverae");
-    mysql_select_db("anyfeed");
 
     $q = mysql_query("select count(*) from feeds where " .
         "username='$username' and feedurl='$url'");

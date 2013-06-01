@@ -1,9 +1,9 @@
 <?php
     header("Content-Type: text/xml");
     require_once "ensureLoggedIn.php";
+    require_once "connectToDb.php";
+
     $username = $_SESSION["username"];
-    $conn = mysql_connect("localhost","stephen","iloverae");
-    mysql_select_db("anyfeed");
 
     print "<feeds>";
     $q = mysql_query("select * from feeds where username='$username'");
