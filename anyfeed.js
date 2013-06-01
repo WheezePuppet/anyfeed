@@ -33,6 +33,7 @@ var init = function() {
         password = $.cookies.get("anyfeedPassword");
     $("#renamefeed").click(renameFeed);
     $("#removefeed").click(removeFeed);
+    $("#refresh").click(refreshFeeds);
     $("#addnewfeed").click(addNewlyTypedFeed);
     $("#import").click(importOpml);
     $("#logout").click(logout);
@@ -259,6 +260,21 @@ var displayAllFeeds = function() {
     }
 };
 
+// ---------------------------- refresh feeds ----------------------------
+var refreshFeeds = function() {
+    for (var i=1, len=feedsArray.length; i<len; i++) {
+        var feed = feedsArray[i];
+        delete feed.contents;
+        feed.feedDiv.removeClass("loading2");
+        feed.feedDiv.removeClass("loading3");
+        feed.feedDiv.addClass("loading");
+        feed.feedTitleSpan.html(feed.title);
+        updateUnreadCountForFeed(feed);
+    }
+};
+
+
+
 // ------------------------------ add feeds -------------------------------
 var addNewlyTypedFeed = function() {
     var url = $("#newfeedurl").val();
@@ -345,19 +361,23 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
     feedsHash[newfeed.url] = newfeed;
 
     // 3. Update the feed with its "unread" count.
-    if (newfeed.contents === undefined) {
+    updateUnreadCountForFeed(newfeed);
+};
+
+var updateUnreadCountForFeed = function(feed) {
+    if (feed.contents === undefined) {
         // Cache empty for this feed. Fill it.        
-        loadFeedThenCall(newfeed.url, 
+        loadFeedThenCall(feed.url, 
             function(data) {
-                feedDiv.removeClass("loading");
-                feedDiv.addClass("loading2");
-                newfeed.contents = $(data);
-                startUpdateUnreadCountFromCachedContents(newfeed);
+                feed.feedDiv.removeClass("loading");
+                feed.feedDiv.addClass("loading2");
+                feed.contents = $(data);
+                startUpdateUnreadCountFromCachedContents(feed);
             }
         );
     } else {
-        feedDiv.addClass("loading2");
-        startUpdateUnreadCountFromCachedContents(newfeed);
+        feed.feedDiv.addClass("loading2");
+        startUpdateUnreadCountFromCachedContents(feed);
     }
 };
 
