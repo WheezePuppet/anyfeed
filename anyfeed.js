@@ -460,7 +460,8 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 postTextDiv.addClass("posttext");
                 
                 toAppend += 
-                    "<a href=\"" + post.find("link").text() + 
+                    "<img class=postDot >" +
+                        " <a href=\"" + post.find("link").text() + 
                         "\" target=\"_blank\">" + 
                         post.find("title").text() + "</a>";
 
@@ -480,10 +481,12 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                     computeGuidIshThingFromItem(channelLink,post),unread) 
                         == -1) {
                     postTitleDiv.find("a").addClass("read");
+                    postTitleDiv.find("img.postDot").attr("src","greySquare.png");
                     postTextDiv.addClass("read");
                     postDiv.addClass("read");
                 } else {
                     postTitleDiv.find("a").addClass("unread");
+                    postTitleDiv.find("img.postDot").attr("src","blueSquare.png");
                     postTextDiv.addClass("unread");
                     postDiv.addClass("unread");
                 }
@@ -536,6 +539,7 @@ var finishTogglePostReadness = function(postDiv) {
         if (readness.indexOf("read") == 0) {
             postTitleDiv.find("a").addClass("read");
             postTitleDiv.find("a").removeClass("unread");
+            postTitleDiv.find("img.postDot").attr("src","greySquare.png");
             postTextDiv.addClass("read");
             postTextDiv.removeClass("unread");
             postDiv.addClass("read");
@@ -544,6 +548,7 @@ var finishTogglePostReadness = function(postDiv) {
         } else {
             postTitleDiv.find("a").addClass("unread");
             postTitleDiv.find("a").removeClass("read");
+            postTitleDiv.find("img.postDot").attr("src","blueSquare.png");
             postTextDiv.addClass("unread");
             postTextDiv.removeClass("read");
             postDiv.addClass("unread");

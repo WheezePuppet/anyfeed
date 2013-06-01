@@ -68,3 +68,5 @@ a.unread { color:blue; }
 .loading { color:#CCCCCC; }
 .loading2 { color:#AAAAAA; }
 .loading3 { color:black; }
+
+.postDot { margin-left:0px; width:10px; cursor:pointer; }
