@@ -434,15 +434,16 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
             }
 
             postsDiv.html("<div style=\"vertical-align:middle;\">" +
-                "<span id=poststitle>" + title + "</span>" +
-                "<div>" +
-                "<span><button id=markAllRead>Mark all read</button></span>" +
-                "<span><button id=markAllUnread>Mark all unread</button></span>" +
-                "</div>" +
-                "</div>" +
-                "<div class=activefeedurl>" +
-                "<a href=\"" + feed.link + "\">" + feed.link + "</a>" +
-                "</div>");
+              "<span id=poststitle>" + title + "</span>" +
+              "<div>" +
+              "<span><button id=markAllRead>Mark all read</button></span>" +
+              "<span><button id=markAllUnread>Mark all unread</button></span>"+
+              "</div>" +
+              "</div>" +
+              "<div class=activefeedurl>" +
+              "<a href=\"" + feed.link + "\" target=\"_blank\">" + 
+                  feed.link + "</a>" +
+              "</div>");
             $("#markAllRead").click(markAllPostsRead);
             $("#markAllUnread").click(markAllPostsUnread);
 
