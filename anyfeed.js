@@ -174,6 +174,8 @@ var startUpdateUnreadCountFromCachedContents = function(feed) {
         contentType : "text/json"
     }).done(
         function finishUpdateUnreadCountFromCachedContents(data) {
+feed.feedDiv.removeClass("loading2");
+feed.feedDiv.addClass("loading3");
             var unread = $(data);
             setUnreadCount(feed, unread.length);
         });
@@ -311,6 +313,8 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
         feedButtonSpan = $("<span>"), // (create a new feed button div)
         feedsDiv = $("#feeds");       // (get the existing feeds div)
 
+    feedDiv.addClass("loading");
+
     feedTitleSpan.addClass("feedtitle");
     feedTitleSpan.text(newfeed.title);
     feedTitleSpan.data("feed",newfeed);
@@ -325,7 +329,6 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
     // 1b. String together these new divs.
     feedDiv.append(feedButtonSpan);
     feedDiv.append(feedTitleSpan);
-    //feedsDiv.append(feedDiv);
 
     // 2. Add this feed to the data structures (feedsArray, feedsHash).
     newfeed["feedDiv"] = feedDiv;
@@ -344,11 +347,14 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
         // Cache empty for this feed. Fill it.        
         loadFeedThenCall(newfeed.url, 
             function(data) {
+                feedDiv.removeClass("loading");
+                feedDiv.addClass("loading2");
                 newfeed.contents = $(data);
                 startUpdateUnreadCountFromCachedContents(newfeed);
             }
         );
     } else {
+        feedDiv.addClass("loading2");
         startUpdateUnreadCountFromCachedContents(newfeed);
     }
 };
