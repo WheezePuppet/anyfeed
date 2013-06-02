@@ -27,10 +27,13 @@ var loadedFeed;
 // The feed whose "dot" was the most recent to be hovered over.
 var hoveredFeed;
 
+// The name of the logged in user, duh.
+var username;
+
 // -------------------------------- init ----------------------------------
 var init = function() {
-    var username = $.cookies.get("anyfeedUsername"),
-        password = $.cookies.get("anyfeedPassword");
+    var password = $.cookies.get("anyfeedPassword");
+    username = $.cookies.get("anyfeedUsername");
     $("#renamefeed").click(renameFeed);
     $("#removefeed").click(removeFeed);
     $("#refresh").click(refreshFeeds);
@@ -40,11 +43,11 @@ var init = function() {
     if (username == undefined) {
         promptForLogin();
     } else {
-        tryLoggingInToServer(username, password);
+        tryLoggingInToServer(password);
     }
 };
 
-var tryLoggingInToServer = function(username, password) {
+var tryLoggingInToServer = function(password) {
     $.ajax({
         url : "login.php?username=" + escape(username) + "&password=" +
             escape(password),
@@ -70,10 +73,10 @@ var tryLoggingInToServer = function(username, password) {
 var promptForLogin = function() {
     var getDataAndDoLogin = function() {
         $("#loginMessage").text("");
-        var username = $("#username").val(),
-            password = CryptoJS.SHA1($("#password").val()).toString(
-                                                        CryptoJS.enc.Base64);
-        tryLoggingInToServer(username, password);
+        username = $("#username").val();
+        password = CryptoJS.SHA1($("#password").val()).toString(
+                                                    CryptoJS.enc.Base64);
+        tryLoggingInToServer(password);
     };
     $("#password").keyup(function(event) {
         if (event.keyCode == 13) {
@@ -85,8 +88,8 @@ var promptForLogin = function() {
 };
 
 var logout = function() {
-    var username = $.cookies.get("anyfeedUsername");
-    $.cookies.del("anyfeedUsername"); // doesn't work. $@%&*!!
+    username = $.cookies.get("anyfeedUsername");
+    $.cookies.del("anyfeedUsername"); 
     $.cookies.del("anyfeedPassword");
     $.ajax({
         url : "logout.php?username=" + escape(username),
@@ -150,6 +153,7 @@ var removeFeed = function() {
         dataType : "text"
     }).done(function(data) {
         if (data.indexOf("unsubscribed") == 0) {
+            unreadPostsCounter.incrementBy(-hoveredFeed.unreadCount);
             hoveredFeed.feedDiv.remove();
         } else {
             alert("Unable to unsubscribe from " + hoveredFeed.title + "!");
@@ -181,6 +185,7 @@ var startUpdateUnreadCountFromCachedContents = function(feed) {
             feed.feedDiv.addClass("loading3");
             var unread = $(data);
             setUnreadCount(feed, unread.length);
+            unreadPostsCounter.incrementBy(unread.length);
         });
 };
 
@@ -227,6 +232,7 @@ var updateFeedInFeedsDiv = function(feed) {
 var startLoadFeedsFromServer = function() {
     feedsArray = [0];
     feedsHash = {};
+    unreadPostsCounter.set(0);
     $.ajax({
         url : "getAllFeeds.php",
         type : "GET",
@@ -489,12 +495,14 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                     computeGuidIshThingFromItem(channelLink,post),unread) 
                         == -1) {
                     postTitleDiv.find("a").addClass("read");
-                    postTitleDiv.find("img.postDot").attr("src","greySquare.png");
+                    postTitleDiv.find("img.postDot").attr(
+                        "src","greySquare.png");
                     postTextDiv.addClass("read");
                     postDiv.addClass("read");
                 } else {
                     postTitleDiv.find("a").addClass("unread");
-                    postTitleDiv.find("img.postDot").attr("src","blueSquare.png");
+                    postTitleDiv.find("img.postDot").attr(
+                        "src","blueSquare.png");
                     postTextDiv.addClass("unread");
                     postDiv.addClass("unread");
                 }
@@ -553,6 +561,7 @@ var finishTogglePostReadness = function(postDiv) {
             postDiv.addClass("read");
             postDiv.removeClass("unread");
             decrementUnreadCountFor(loadedFeed);
+            unreadPostsCounter.incrementBy(-1);
         } else {
             postTitleDiv.find("a").addClass("unread");
             postTitleDiv.find("a").removeClass("read");
@@ -562,6 +571,7 @@ var finishTogglePostReadness = function(postDiv) {
             postDiv.addClass("unread");
             postDiv.removeClass("read");
             incrementUnreadCountFor(loadedFeed);
+            unreadPostsCounter.incrementBy(1);
         }
     };
 };
@@ -575,6 +585,25 @@ var computeGuidIshThingFromItem = function(channelLink, item) {
         return channelLink.text() + item.find("link").first().text();
     }
 };
+
+var unreadPostsCounter = function() {
+    var numUnreadPosts = 0,
+        updateDisplay = function() {
+            $("#apptitle").text("anyfeed - " + username + 
+                " (" + numUnreadPosts + ")");
+        };
+
+    return {
+        set : function(n) {
+            numUnreadPosts = n;
+            updateDisplay();
+        },
+        incrementBy : function(n) {
+            numUnreadPosts = numUnreadPosts + n;
+            updateDisplay();
+        }
+    };
+}();
 
 init();
 
