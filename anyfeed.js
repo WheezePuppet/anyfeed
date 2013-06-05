@@ -450,8 +450,7 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
               "</div>" +
               "<div class=activefeedurl>" +
               "<a href=\"" + feed.link + "\" target=\"_blank\">" + 
-                  feed.link + "</a>" +
-              "</div>");
+                  feed.link + "</a>");
             $("#markAllRead").click(markAllPostsRead);
             $("#markAllUnread").click(markAllPostsUnread);
 
@@ -511,6 +510,11 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 postDiv.append(postTextDiv);
                 postsDiv.append(postDiv);
             });
+            postsDiv.append(
+                "<span><button id=markAllRead2>Mark all read</button></span>" +
+                "<span><button id=markAllUnread2>Mark all unread</button></span>");
+            $("#markAllRead2").click(markAllPostsRead);
+            $("#markAllUnread2").click(markAllPostsUnread);
         });
     };
 };
