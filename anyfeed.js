@@ -98,6 +98,7 @@ var logout = function() {
     }).done(function(data) {
         $("#logout").css("visibility","hidden");
         $("#apptitle").text("anyfeed");
+        $("title").text("anyfeed");
         $("#feeds").html("");
         $("#posts").html("");
         promptForLogin();
@@ -594,6 +595,8 @@ var unreadPostsCounter = function() {
     var numUnreadPosts = 0,
         updateDisplay = function() {
             $("#apptitle").text("anyfeed - " + username + 
+                " (" + numUnreadPosts + ")");
+            $("title").text("anyfeed " +
                 " (" + numUnreadPosts + ")");
         };
 
