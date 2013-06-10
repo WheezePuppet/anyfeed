@@ -516,6 +516,7 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 "<span><button id=markAllUnread2>Mark all unread</button></span>");
             $("#markAllRead2").click(markAllPostsRead);
             $("#markAllUnread2").click(markAllPostsUnread);
+            postsDiv.scrollTop(0);
         });
     };
 };
