@@ -36,6 +36,8 @@ var init = function() {
     username = $.cookies.get("anyfeedUsername");
     $("#renamefeed").click(renameFeed);
     $("#removefeed").click(removeFeed);
+    $("#markread").click(markFeedReadFromFeedsDiv);
+    $("#markunread").click(markFeedUnreadFromFeedsDiv);
     $("#refresh").click(refreshFeeds);
     $("#addnewfeed").click(addNewlyTypedFeed);
     $("#import").click(importOpml);
@@ -512,11 +514,33 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 postsDiv.append(postDiv);
             });
             postsDiv.append(
-                "<span><button id=markAllRead2>Mark all read</button></span>" +
-                "<span><button id=markAllUnread2>Mark all unread</button></span>");
+             "<span><button id=markAllRead2>Mark all read</button></span>" +
+             "<span><button id=markAllUnread2>Mark all unread</button></span>");
             $("#markAllRead2").click(markAllPostsRead);
             $("#markAllUnread2").click(markAllPostsUnread);
             postsDiv.scrollTop(0);
+        }).fail(function() { 
+            var password = $.cookies.get("anyfeedPassword");
+            $.ajax({
+                url : "login.php?username=" + escape(username) + "&password=" +
+                    escape(password),
+                type : "GET",
+                dataType : "text"
+            }).done(function(data) {
+                if (data.indexOf("logged in") == 0) {
+                    $("#logindialog").css("visibility","hidden");
+                    $.cookies.set("anyfeedUsername", username, 
+                        { expiresAt: new Date(2099,1,1)} );
+                    $.cookies.set("anyfeedPassword", password, 
+                        { expiresAt: new Date(2099,1,1)} );
+                    $("#apptitle").text("anyfeed - " + username);
+                    $("#logout").css("visibility","visible");
+                    startLoadFeedsFromServer();
+                } else {
+                    $("#loginMessage").text("Login failed -- try again.");
+                    promptForLogin();
+                }
+            });
         });
     };
 };
@@ -580,6 +604,30 @@ var finishTogglePostReadness = function(postDiv) {
             unreadPostsCounter.incrementBy(1);
         }
     };
+};
+
+var markFeedReadFromFeedsDiv = function() {
+    var url = hoveredFeed.url;
+    alert("not implemented yet.");
+/*
+    $.ajax({
+        url : "removeFeed.php?url=" + escape(hoveredFeed.url),
+        type : "GET",
+        dataType : "text"
+    }).done(function(data) {
+        if (data.indexOf("unsubscribed") == 0) {
+            unreadPostsCounter.incrementBy(-hoveredFeed.unreadCount);
+            hoveredFeed.feedDiv.remove();
+        } else {
+            alert("Unable to unsubscribe from " + hoveredFeed.title + "!");
+        }
+    });
+*/
+};
+
+var markFeedUnreadFromFeedsDiv = function() {
+    var url = hoveredFeed.url;
+    alert("not implemented yet.");
 };
 
 // ----------------------------- util ----------------------------------
