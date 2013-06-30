@@ -1,7 +1,6 @@
 
 $(document).ready(function() {
 
-
 // Array of feed objects, each of which has a title, and link, a url, a num,
 //   (possibly) cached contents, unread count, feedDiv, feedButtonSpan, and
 //   feedTitleSpan.
@@ -30,6 +29,10 @@ var hoveredFeed;
 // The name of the logged in user, duh.
 var username;
 
+// The current 10-minute timer to refresh feeds.
+var activeTimeout;
+var timeoutDuration = 10*60*1000;
+
 // -------------------------------- init ----------------------------------
 var init = function() {
     var password = $.cookies.get("anyfeedPassword");
@@ -47,6 +50,17 @@ var init = function() {
     } else {
         tryLoggingInToServer(password);
     }
+    activeTimeout = setTimeout(periodicRefresh,timeoutDuration);
+};
+
+var periodicRefresh = function() {
+    refreshFeeds();
+    activeTimeout = setTimeout(periodicRefresh,timeoutDuration);
+};
+
+var restartRefreshTimer = function() {
+    clearTimeout(activeTimeout);
+    activeTimeout = setTimeout(periodicRefresh,timeoutDuration);
 };
 
 var tryLoggingInToServer = function(password) {
@@ -132,6 +146,7 @@ var importOpml = function() {
 var renameFeed = function() {
     var oldtitle = hoveredFeed.title,
         newtitle = prompt("Enter new feed title:", oldtitle);
+    restartRefreshTimer();
     if (newtitle == null) return;
     $.ajax({
         url : "renameFeed.php?url=" + escape(hoveredFeed.url) + 
@@ -150,6 +165,7 @@ var renameFeed = function() {
 // ---------------------- remove feed (unsubscribe) ------------------------
 var removeFeed = function() {
     var url = hoveredFeed.url;
+    restartRefreshTimer();
     $.ajax({
         url : "removeFeed.php?url=" + escape(hoveredFeed.url),
         type : "GET",
@@ -275,14 +291,17 @@ var displayAllFeeds = function() {
 
 // ---------------------------- refresh feeds ----------------------------
 var refreshFeeds = function() {
+    unreadPostsCounter.set(0);
     for (var i=1, len=feedsArray.length; i<len; i++) {
         var feed = feedsArray[i];
-        delete feed.contents;
-        feed.feedDiv.removeClass("loading2");
-        feed.feedDiv.removeClass("loading3");
-        feed.feedDiv.addClass("loading");
-        feed.feedTitleSpan.html(feed.title);
-        updateUnreadCountForFeed(feed);
+        if (feed !== undefined) {
+            delete feed.contents;
+            feed.feedDiv.removeClass("loading2");
+            feed.feedDiv.removeClass("loading3");
+            feed.feedDiv.addClass("loading");
+            feed.feedTitleSpan.html(feed.title);
+            updateUnreadCountForFeed(feed);
+        }
     }
 };
 
@@ -291,6 +310,7 @@ var refreshFeeds = function() {
 // ------------------------------ add feeds -------------------------------
 var addNewlyTypedFeed = function() {
     var url = $("#newfeedurl").val();
+    restartRefreshTimer();
     startAddNewFeed(url);
     $("#newfeedurl").val("");
 };
@@ -355,8 +375,11 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
     feedButtonSpan.html("<img src=greyDot.png />");
     feedButtonSpan.data("feed",newfeed);
     feedButtonSpan.addpopupmenu("feedpopupmenu");
-    feedButtonSpan.mouseenter(function() { hoveredFeed = newfeed; });
-
+    feedButtonSpan.mouseenter(function() {
+        restartRefreshTimer();
+        hoveredFeed = newfeed; 
+    });
+    
     // 1b. String together these new divs.
     feedDiv.append(feedButtonSpan);
     feedDiv.append(feedTitleSpan);
@@ -406,6 +429,7 @@ var loadFeedThenCall = function(url, callback) {
 // ------------------------ populate posts div -----------------------------
 var startPopulatePostsDivWithFeedContents = function() {
     var url = $(this).data("feed").url;
+    restartRefreshTimer();
     if (loadedFeed != null) {
         loadedFeed.feedTitleSpan.removeClass("activeFeed");
     }
@@ -548,6 +572,7 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
 // ------------------------- toggle readness -----------------------------
 var markAllPostsRead = function() {
     var postDivs = $("#posts > .post");
+    restartRefreshTimer();
     postDivs.each(function() { 
         if ($(this).hasClass("unread")) {
             $(this).trigger("click");
@@ -557,6 +582,7 @@ var markAllPostsRead = function() {
 
 var markAllPostsUnread = function() {
     var postDivs = $("#posts > .post");
+    restartRefreshTimer();
     postDivs.each(function() { 
         if ($(this).hasClass("read")) {
             $(this).trigger("click");
@@ -567,6 +593,7 @@ var markAllPostsUnread = function() {
 var startTogglePostReadness = function() {
     var guid = computeGuidIshThingFromItem($(this).data("channelLink"),
         $(this).data("post"));
+    restartRefreshTimer();
     $.ajax({
         url : "togglePostReadness",
         data : JSON.stringify(guid),
@@ -608,6 +635,7 @@ var finishTogglePostReadness = function(postDiv) {
 
 var markFeedReadFromFeedsDiv = function() {
     var url = hoveredFeed.url;
+    restartRefreshTimer();
     alert("not implemented yet.");
 /*
     $.ajax({
@@ -627,6 +655,7 @@ var markFeedReadFromFeedsDiv = function() {
 
 var markFeedUnreadFromFeedsDiv = function() {
     var url = hoveredFeed.url;
+    restartRefreshTimer();
     alert("not implemented yet.");
 };
 
