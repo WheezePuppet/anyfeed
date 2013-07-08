@@ -228,13 +228,13 @@ var updateFeedInFeedsDiv = function(feed) {
         feed.feedTitleSpan.html("<span class=feedcaughtup>" + feed.title +
             "</span>");
         feed.feedTitleSpan.append(" <span class=zerounreadcount>(0)");
-        feed.feedDiv.find("img").attr("src","greyDot.png");
+        feed.feedDiv.find("img").attr("src","images/greyDot.png");
     } else {
         feed.feedTitleSpan.html("<span class=feednotcaughtup>" + feed.title +
             "</span>");
         feed.feedTitleSpan.append(" <span class=nonzerounreadcount>(" + 
             feed.unreadCount + ")</span>");
-        feed.feedDiv.find("img").attr("src","blueDot.png");
+        feed.feedDiv.find("img").attr("src","images/blueDot.png");
     }
     if (feed == loadedFeed) {
         if (feed.unreadCount == 0) {
@@ -372,7 +372,7 @@ var addFeedToMemoryAndDisplay = function(newfeed) {
     feedTitleSpan.click(startPopulatePostsDivWithFeedContents);
 
     feedButtonSpan.addClass("feedbutton");
-    feedButtonSpan.html("<img src=greyDot.png />");
+    feedButtonSpan.html("<img src=\"images/greyDot.png\" />");
     feedButtonSpan.data("feed",newfeed);
     feedButtonSpan.addpopupmenu("feedpopupmenu");
     feedButtonSpan.mouseenter(function() {
@@ -522,13 +522,13 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                         == -1) {
                     postTitleDiv.find("a").addClass("read");
                     postTitleDiv.find("img.postDot").attr(
-                        "src","greySquare.png");
+                        "src","images/greySquare.png");
                     postTextDiv.addClass("read");
                     postDiv.addClass("read");
                 } else {
                     postTitleDiv.find("a").addClass("unread");
                     postTitleDiv.find("img.postDot").attr(
-                        "src","blueSquare.png");
+                        "src","images/blueSquare.png");
                     postTextDiv.addClass("unread");
                     postDiv.addClass("unread");
                 }
@@ -612,7 +612,8 @@ var finishTogglePostReadness = function(postDiv) {
         if (readness.indexOf("read") == 0) {
             postTitleDiv.find("a").addClass("read");
             postTitleDiv.find("a").removeClass("unread");
-            postTitleDiv.find("img.postDot").attr("src","greySquare.png");
+            postTitleDiv.find("img.postDot").attr("src",
+                "images/greySquare.png");
             postTextDiv.addClass("read");
             postTextDiv.removeClass("unread");
             postDiv.addClass("read");
@@ -622,7 +623,8 @@ var finishTogglePostReadness = function(postDiv) {
         } else {
             postTitleDiv.find("a").addClass("unread");
             postTitleDiv.find("a").removeClass("read");
-            postTitleDiv.find("img.postDot").attr("src","blueSquare.png");
+            postTitleDiv.find("img.postDot").attr("src",
+                "images/blueSquare.png");
             postTextDiv.addClass("unread");
             postTextDiv.removeClass("read");
             postDiv.addClass("unread");

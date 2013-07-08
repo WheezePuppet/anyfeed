@@ -37,7 +37,15 @@ CREATE TABLE `posts` (
 );
 
 
-3) Create a file called .htaccess in the anyfeed directory, and add these 
+3) Create an account for yourself (and anyone else you'd like). Enter the
+following on the MySQL command line:
+
+INSERT INTO users VALUES ('yourusername',SHA1('yourpassword'));
+
+(Substitute your actual desired username and password, of course.)
+
+
+4) Create a file called .htaccess in the anyfeed directory, and add these 
 four lines to it:
 
 SetEnv MYSQL_HOST yourMySQLHost
