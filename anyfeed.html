@@ -20,15 +20,15 @@
 
 <div id=main>
 <div class=leftpane>
-    <h1 id=apptitle>anyfeed</h1>
-    <div id=mainwidgetsdiv>
+    <h1 id=apptitle class="onlyloggedin">anyfeed</h1>
+    <div id=mainwidgetsdiv class="onlyloggedin">
         <input type=text size=18 id=newfeedurl />
         <button id=addnewfeed><img src="images/plus.png" width=20 /></button>
         <button id=refresh><img src="images/refresh.png" width=20 /></button>
     </div>
     <div id=categories></div>
     <div id=feeds></div>
-    <div id=miscbuttonsdiv>
+    <div id=miscbuttonsdiv class="onlyloggedin">
         <button id=import>Import OPML</button>
         <button id=logout>Logout</button>
     </div>
@@ -44,6 +44,10 @@
             <button id=loginSubmit>Login</button></td></tr>
         <tr><td colspan=2 style="text-align:center;"><span id=loginMessage>
             </span></td></tr>
+        <tr><td colspan=2><span id=invite>
+    If you'd like to use <span class="productname">anyfeed</span>, send an email to stephen _AT_ umw _DOT_ edu
+for a free account, or <a
+href="https://github.com/WheezePuppet/anyfeed">install a server.</a></span></td></tr>
     </table>
     </div>
 </div>

@@ -63,8 +63,6 @@ a.unread { color:blue; }
 
 #loginMessage { font-size:10pt; font-weight:bold; }
 
-#logout { visibility:hidden; }
-
 .loading { color:#CCCCCC; }
 .loading2 { color:#AAAAAA; }
 .loading3 { color:black; }
@@ -78,3 +76,6 @@ margin-top:10px; margin-bottom:10px; }
 #addnewfeed, #refresh { width:32px; vertical-align:middle; }
 #miscbuttonsdiv { text-align:center; margin-top:20px;}
 #mainwidgetsdiv { text-align:center; }
+
+#invite { font-size:7pt;color:#555555; }
+#invite .productname { color:#222222; } 

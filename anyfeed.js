@@ -77,7 +77,7 @@ var tryLoggingInToServer = function(password) {
             $.cookies.set("anyfeedPassword", password, 
                 { expiresAt: new Date(2099,1,1)} );
             $("#apptitle").text("anyfeed - " + username);
-            $("#logout").css("visibility","visible");
+            $(".onlyloggedin").css("visibility","visible");
             startLoadFeedsFromServer();
         } else {
             $("#loginMessage").text("Login failed -- try again.");
@@ -101,6 +101,7 @@ var promptForLogin = function() {
     });
     $("#loginSubmit").click(getDataAndDoLogin);
     $("#logindialog").css("visibility","visible");
+    $(".onlyloggedin").css("visibility","hidden");
 };
 
 var logout = function() {
@@ -112,7 +113,7 @@ var logout = function() {
         type : "GET",
         dataType : "text"
     }).done(function(data) {
-        $("#logout").css("visibility","hidden");
+        $(".onlyloggedin").css("visibility","hidden");
         $("#apptitle").text("anyfeed");
         $("title").text("anyfeed");
         $("#feeds").html("");
@@ -558,7 +559,6 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                     $.cookies.set("anyfeedPassword", password, 
                         { expiresAt: new Date(2099,1,1)} );
                     $("#apptitle").text("anyfeed - " + username);
-                    $("#logout").css("visibility","visible");
                     startLoadFeedsFromServer();
                 } else {
                     $("#loginMessage").text("Login failed -- try again.");
