@@ -21,13 +21,17 @@
 <div id=main>
 <div class=leftpane>
     <h1 id=apptitle>anyfeed</h1>
-    <input type=text size=20 id=newfeedurl />
-    <button id=addnewfeed>Add</button>
-    <div><button id=refresh>Refresh</button></div>
+    <div id=mainwidgetsdiv>
+        <input type=text size=18 id=newfeedurl />
+        <button id=addnewfeed><img src="images/plus.png" width=20 /></button>
+        <button id=refresh><img src="images/refresh.png" width=20 /></button>
+    </div>
     <div id=categories></div>
     <div id=feeds></div>
-    <div><button id=import>Import OPML</button></div>
-    <div><button id=logout>Logout</button></div>
+    <div id=miscbuttonsdiv>
+        <button id=import>Import OPML</button>
+        <button id=logout>Logout</button>
+    </div>
 </div>
 <div id=posts></div>
 </div>

@@ -7,6 +7,10 @@ Stephen Davies (stephen@umw.edu)
 | Installation Instructions |
 +---------------------------+
 
+Prerequisites: you must have a Web-accessible server with a reasonably recent
+version of Apache, modphp, and MySQL.
+
+
 1) Unpack the contents of anyfeed.zip into a new Web-accessible directory
 (e.g., a subdirectory of /var/www or of some user's public_html directory.)
 

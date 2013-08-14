@@ -73,3 +73,8 @@ a.unread { color:blue; }
 
 .activefeedurl { font-size:8pt; margin-left:20px; 
 margin-top:10px; margin-bottom:10px; }
+
+#newfeedurl { width:200px; vertical-align:middle; }
+#addnewfeed, #refresh { width:32px; vertical-align:middle; }
+#miscbuttonsdiv { text-align:center; margin-top:20px;}
+#mainwidgetsdiv { text-align:center; }
