@@ -321,11 +321,33 @@ var startAddNewFeed = function(url, newtitle) {
     loadFeedThenCall(url, finishAddNewFeed(url, newtitle));
 };
 
+var extractFeedTitle = function(data) {
+    var tryRss = $(data).find("channel > title"),
+        tryAtom;
+    if (tryRss.size() != 0) {
+        return tryRss.text();
+    } else {
+        tryAtom = $(data).find("feed > title");
+        return tryAtom.text();
+    }
+}
+
+var extractFeedLink = function(data) {
+    var tryRss = $(data).find("channel > link"),
+        tryAtom;
+    if (tryRss.size() != 0) {
+        return tryRss.text();
+    } else {
+        tryAtom = $(data).find("feed > link").first();
+        return tryAtom.attr("href");
+    }
+}
+
 var finishAddNewFeed = function(url, newtitle) { 
     return function(data) {
         var title = newtitle == null ? 
-                $(data).find("channel > title").text() : newtitle,
-            link = $(data).find("channel > link").text(),
+                extractFeedTitle(data) : newtitle,
+            link = extractFeedLink(data),
             newfeed = {
                 title : title,
                 link : link,
@@ -444,7 +466,8 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
     return function(feedContents) {
 
         var guids = [],
-            channelLink = $(feedContents).find("channel > link").first();
+            //channelLink = $(feedContents).find("channel > link").first();
+            channelLink = extractFeedTitle(feedContents);
 
         $(feedContents).find("item").each(function() {
             var guidIshThing = 
