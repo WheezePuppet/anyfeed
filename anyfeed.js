@@ -186,10 +186,10 @@ var startUpdateUnreadCountFromCachedContents = function(feed) {
     var feedTitleSpan = feed["feedTitleSpan"],
         cachedContent = feed["contents"],
         guids = [],
-        channelLink = $(cachedContent).find("channel > link").first();
+        feedLink = extractFeedLink($(cachedContent));
 
-    $(cachedContent).find("item").each(function() {
-        var guidIshThing = computeGuidIshThingFromItem(channelLink, $(this));
+    extractItems($(cachedContent)).each(function() {
+        var guidIshThing = computeGuidIshThingFromItem(feedLink, $(this));
         guids.push(guidIshThing);
     });
 
@@ -461,17 +461,25 @@ var startPopulatePostsDivWithFeedContents = function() {
     loadFeedThenCall(url, continuePopulatePostsDivWithFeedContents(url));
 };
 
+var extractItems = function(feedContents) {
+    var tryRss = feedContents.find("item");
+    if (tryRss.size() > 0) {
+        return tryRss;
+    } else {
+        return feedContents.find("entry");
+    }
+}
+
 var continuePopulatePostsDivWithFeedContents = function(url) {
 
     return function(feedContents) {
 
         var guids = [],
-            //channelLink = $(feedContents).find("channel > link").first();
-            channelLink = extractFeedTitle(feedContents);
+            feedLink = extractFeedLink(feedContents);
 
-        $(feedContents).find("item").each(function() {
+        extractItems($(feedContents)).each(function() {
             var guidIshThing = 
-                computeGuidIshThingFromItem(channelLink, $(this));
+                computeGuidIshThingFromItem(feedLink, $(this));
             guids.push(guidIshThing);
         });
 
@@ -483,7 +491,7 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
             contentType : "text/json"
         }).done(function finishPopulatePostsDivWithFeedContents(data) {
 
-            var title = $(feedContents).find("channel > title").text(),
+            var title = extractFeedTitle($(feedContents)),
                 postsDiv = $("#posts"),
                 unread = $(data),
                 feed = feedsHash[url];
@@ -511,7 +519,7 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 $("#poststitle").addClass("feednotcaughtup");
             }
 
-            $(feedContents).find("item").each(function() {
+            extractItems($(feedContents)).each(function() {
 
                 var post = $(this),
                     postDiv = $("<div>"),
@@ -525,7 +533,7 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 
                 toAppend += 
                     "<img class=postDot >" +
-                        " <a href=\"" + post.find("link").text() + 
+                        " <a href=\"" + extractItemLink(post) + 
                         "\" target=\"_blank\">" + 
                         post.find("title").text() + "</a>";
 
@@ -535,14 +543,14 @@ var continuePopulatePostsDivWithFeedContents = function(url) {
                 }
 
                 postTitleDiv.append(toAppend);
-                postTextDiv.append(post.find("description").text());
+                postTextDiv.append(extractContent(post));
 
                 postDiv.data("post",post);
-                postDiv.data("channelLink",channelLink);
+                postDiv.data("feedLink",feedLink);
                 postDiv.click(startTogglePostReadness);
 
                 if ($.inArray(
-                    computeGuidIshThingFromItem(channelLink,post),unread) 
+                    computeGuidIshThingFromItem(feedLink,post),unread) 
                         == -1) {
                     postTitleDiv.find("a").addClass("read");
                     postTitleDiv.find("img.postDot").attr(
@@ -614,8 +622,8 @@ var markAllPostsUnread = function() {
 };
 
 var startTogglePostReadness = function() {
-    var guid = computeGuidIshThingFromItem($(this).data("channelLink"),
-        $(this).data("post"));
+    var guid = computeGuidIshThingFromItem(
+        $(this).data("feedLink"), $(this).data("post"));
     restartRefreshTimer();
     $.ajax({
         url : "togglePostReadness",
@@ -685,12 +693,33 @@ var markFeedUnreadFromFeedsDiv = function() {
 };
 
 // ----------------------------- util ----------------------------------
-var computeGuidIshThingFromItem = function(channelLink, item) {
+var extractItemLink = function(item) {
+    var tryAtom = item.find("link[href]");
+    if (tryAtom.size() > 0) {
+        return tryAtom.first().attr("href");
+    } else {
+        return item.find("link").text();
+    }
+}
+
+var extractContent = function(item) {
+    var tryRss = item.find("description");
+    if (tryRss.size() > 0) {
+        return tryRss.text();
+    } else {
+        return item.find("content").text();
+    }
+}
+
+var computeGuidIshThingFromItem = function(feedLink, item) {
     var guidMaybe = item.find("guid");
+    if (guidMaybe.length == 0) {
+        guidMaybe = item.find("id");
+    }
     if (guidMaybe.length != 0) {
         return guidMaybe.first().text();
     } else {
-        return channelLink.text() + item.find("link").first().text();
+        return feedLink + extractItemLink(item);
     }
 };
 
