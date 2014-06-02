@@ -38,6 +38,7 @@ var init = function() {
     var password = $.cookies.get("anyfeedPassword");
     username = $.cookies.get("anyfeedUsername");
     $("#renamefeed").click(renameFeed);
+    $("#showfeedurl").click(showFeelUrl);
     $("#removefeed").click(removeFeed);
     $("#markread").click(markFeedReadFromFeedsDiv);
     $("#markunread").click(markFeedUnreadFromFeedsDiv);
@@ -161,6 +162,11 @@ var renameFeed = function() {
             $("#poststitle").text(newtitle + " (" + oldtitle + ")");
         }
     });
+};
+
+// ----------------------------- rename feed -------------------------------
+var showFeelUrl = function() {
+    alert(hoveredFeed.url);
 };
 
 // ---------------------- remove feed (unsubscribe) ------------------------
