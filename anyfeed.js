@@ -322,7 +322,7 @@ var addNewlyTypedFeed = function() {
     $("#newfeedurl").val("");
 };
 
-// (title will be null unless this is an import)
+// (newtitle will be null unless this is an import)
 var startAddNewFeed = function(url, newtitle) {
     loadFeedThenCall(url, finishAddNewFeed(url, newtitle));
 };
