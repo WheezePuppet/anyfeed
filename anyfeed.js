@@ -632,7 +632,7 @@ var startTogglePostReadness = function() {
         $(this).data("feedLink"), $(this).data("post"));
     restartRefreshTimer();
     $.ajax({
-        url : "togglePostReadness",
+        url : "togglePostReadness.php",
         data : JSON.stringify(guid),
         type : "POST",
         dataType : "text",
